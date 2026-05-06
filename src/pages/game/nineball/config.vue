@@ -238,10 +238,14 @@ const config = ref<MatchConfig>({ ...DEFAULT_CONFIG });
 const gameTimeMinutes = ref('');
 
 onMounted(() => {
-  const savedConfig = loadConfig();
-  config.value = { ...savedConfig };
-  if (savedConfig.gameTime !== null) {
-    gameTimeMinutes.value = String(savedConfig.gameTime / 60);
+  config.value = { ...DEFAULT_CONFIG };
+  
+  const pages = getCurrentPages();
+  const currentPage = pages[pages.length - 1];
+  const options = (currentPage as any)?.options || {};
+  
+  if (options.gameType === '六球') {
+    config.value.targetBalls = 6;
   }
 });
 

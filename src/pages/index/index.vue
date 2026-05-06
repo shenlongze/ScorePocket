@@ -43,10 +43,10 @@
             <text class="mode-desc">多人混战</text>
           </view>
           
-          <view class="mode-card" @tap="startGame('四球')">
-            <view class="mode-icon">🔵</view>
-            <text class="mode-name">四球</text>
-            <text class="mode-desc">简单快速</text>
+          <view class="mode-card" @tap="startGame('六球')">
+            <view class="mode-icon">🟡</view>
+            <text class="mode-name">六球</text>
+            <text class="mode-desc">快速对决</text>
           </view>
           
           <view class="mode-card" @tap="startGame('自定义')">
@@ -142,8 +142,8 @@ function startGame(gameType: string) {
     return
   }
   
-  if (gameType === '九球') {
-    uni.navigateTo({ url: '/pages/game/nineball/config' })
+  if (gameType === '九球' || gameType === '六球') {
+    uni.navigateTo({ url: `/pages/game/nineball/config?gameType=${gameType}` })
     return
   }
   
