@@ -31,6 +31,12 @@
             <text class="mode-desc">按序击打</text>
           </view>
           
+          <view class="mode-card" @tap="startGame('六球')">
+            <view class="mode-icon">🟡</view>
+            <text class="mode-name">六球</text>
+            <text class="mode-desc">快速对决</text>
+          </view>
+          
           <view class="mode-card" @tap="startGame('斯诺克')">
             <view class="mode-icon">🟢</view>
             <text class="mode-name">斯诺克</text>
@@ -41,12 +47,6 @@
             <view class="mode-icon">🤝</view>
             <text class="mode-name">抓迷糊</text>
             <text class="mode-desc">多人混战</text>
-          </view>
-          
-          <view class="mode-card" @tap="startGame('六球')">
-            <view class="mode-icon">🟡</view>
-            <text class="mode-name">六球</text>
-            <text class="mode-desc">快速对决</text>
           </view>
           
           <view class="mode-card" @tap="startGame('自定义')">
