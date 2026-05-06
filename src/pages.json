@@ -1,0 +1,130 @@
+{
+	"pages": [
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "台球计分"
+			}
+		},
+		{
+			"path": "pages/match/list",
+			"style": {
+				"navigationBarTitleText": "对局记录"
+			}
+		},
+		{
+			"path": "pages/game/onevone/index",
+			"style": {
+				"navigationBarTitleText": "1V1对战"
+			}
+		},
+		{
+			"path": "pages/game/mode-select/index",
+			"style": {
+				"navigationBarTitleText": "选择模式"
+			}
+		},
+		{
+			"path": "pages/game/zambo/index",
+			"style": {
+				"navigationBarTitleText": "抓迷糊"
+			}
+		},
+		{
+			"path": "pages/game/chinese8/index",
+			"style": {
+				"navigationBarTitleText": "中式八球"
+			}
+		},
+		{
+			"path": "pages/game/nineball/index",
+			"style": {
+				"navigationBarTitleText": "九球"
+			}
+		},
+		{
+			"path": "pages/game/snooker/index",
+			"style": {
+				"navigationBarTitleText": "斯诺克"
+			}
+		},
+		{
+			"path": "pages/tournament/list",
+			"style": {
+				"navigationBarTitleText": "赛事列表"
+			}
+		},
+		{
+			"path": "pages/tournament/create",
+			"style": {
+				"navigationBarTitleText": "创建赛事"
+			}
+		},
+		{
+			"path": "pages/tournament/bracket",
+			"style": {
+				"navigationBarTitleText": "赛事图谱"
+			}
+		},
+		{
+			"path": "pages/profile/index",
+			"style": {
+				"navigationBarTitleText": "个人中心"
+			}
+		},
+		{
+			"path": "pages/pay/index",
+			"style": {
+				"navigationBarTitleText": "开通会员"
+			}
+		},
+		{
+			"path": "pages/ad/splash",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": ""
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "台球计分",
+		"navigationBarBackgroundColor": "#1a1a2e",
+		"backgroundColor": "#1a1a2e",
+		"backgroundColorTop": "#1a1a2e",
+		"backgroundColorBottom": "#1a1a2e"
+	},
+	"tabBar": {
+		"color": "#8f8f94",
+		"selectedColor": "#4a9eff",
+		"backgroundColor": "#16213e",
+		"borderStyle": "black",
+		"list": [
+			{
+				"pagePath": "pages/index/index",
+				"text": "首页",
+				"iconPath": "static/icons/home.png",
+				"selectedIconPath": "static/icons/home-active.png"
+			},
+			{
+				"pagePath": "pages/match/list",
+				"text": "记录",
+				"iconPath": "static/icons/record.png",
+				"selectedIconPath": "static/icons/record-active.png"
+			},
+			{
+				"pagePath": "pages/tournament/list",
+				"text": "赛事",
+				"iconPath": "static/icons/tournament.png",
+				"selectedIconPath": "static/icons/tournament-active.png"
+			},
+			{
+				"pagePath": "pages/profile/index",
+				"text": "我的",
+				"iconPath": "static/icons/profile.png",
+				"selectedIconPath": "static/icons/profile-active.png"
+			}
+		]
+	},
+	"uniIdRouter": {}
+}

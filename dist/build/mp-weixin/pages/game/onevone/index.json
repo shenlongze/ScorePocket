@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "1V1对战",
+  "usingComponents": {
+    "score-board": "../../../components/ScoreBoard"
+  }
+}

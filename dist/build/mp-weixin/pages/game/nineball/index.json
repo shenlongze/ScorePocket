@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "九球",
+  "usingComponents": {
+    "score-board": "../../../components/ScoreBoard"
+  }
+}

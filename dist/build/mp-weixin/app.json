@@ -1,0 +1,59 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/match/list",
+    "pages/game/onevone/index",
+    "pages/game/mode-select/index",
+    "pages/game/zambo/index",
+    "pages/game/chinese8/index",
+    "pages/game/nineball/index",
+    "pages/game/snooker/index",
+    "pages/tournament/list",
+    "pages/tournament/create",
+    "pages/tournament/bracket",
+    "pages/profile/index",
+    "pages/pay/index",
+    "pages/ad/splash"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "台球计分",
+    "navigationBarBackgroundColor": "#1a1a2e",
+    "backgroundColor": "#1a1a2e",
+    "backgroundColorTop": "#1a1a2e",
+    "backgroundColorBottom": "#1a1a2e"
+  },
+  "tabBar": {
+    "color": "#8f8f94",
+    "selectedColor": "#4a9eff",
+    "backgroundColor": "#16213e",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "static/icons/home.png",
+        "selectedIconPath": "static/icons/home-active.png"
+      },
+      {
+        "pagePath": "pages/match/list",
+        "text": "记录",
+        "iconPath": "static/icons/record.png",
+        "selectedIconPath": "static/icons/record-active.png"
+      },
+      {
+        "pagePath": "pages/tournament/list",
+        "text": "赛事",
+        "iconPath": "static/icons/tournament.png",
+        "selectedIconPath": "static/icons/tournament-active.png"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的",
+        "iconPath": "static/icons/profile.png",
+        "selectedIconPath": "static/icons/profile-active.png"
+      }
+    ]
+  },
+  "usingComponents": {}
+}

@@ -1,0 +1,1 @@
+"use strict";exports.assignBalls=function(t,o=15){const n=Math.floor(o/t),r=o%t,s=Array.from({length:o},(t,o)=>o+1);for(let a=s.length-1;a>0;a--){const t=Math.floor(Math.random()*(a+1));[s[a],s[t]]=[s[t],s[a]]}const e=new Map;let l=0;for(let a=0;a<t;a++){const t=n+(a<r?1:0);e.set(a,s.slice(l,l+t)),l+=t}return e};
