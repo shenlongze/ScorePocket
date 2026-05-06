@@ -143,7 +143,7 @@ function startGame(gameType: string) {
   }
   
   if (gameType === '九球') {
-    uni.navigateTo({ url: '/pages/game/nineball/index' })
+    uni.navigateTo({ url: '/pages/game/nineball/config' })
     return
   }
   

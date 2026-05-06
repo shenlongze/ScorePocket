@@ -37,9 +37,21 @@
 			}
 		},
 		{
+			"path": "pages/game/nineball/config",
+			"style": {
+				"navigationBarTitleText": "比赛配置"
+			}
+		},
+		{
 			"path": "pages/game/nineball/index",
 			"style": {
-				"navigationBarTitleText": "九球"
+				"navigationBarTitleText": "中式九球"
+			}
+		},
+		{
+			"path": "pages/game/nineball/records",
+			"style": {
+				"navigationBarTitleText": "操作记录"
 			}
 		},
 		{
