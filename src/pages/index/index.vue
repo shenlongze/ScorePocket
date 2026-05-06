@@ -83,10 +83,6 @@
         <view class="banner-btn">立即开通</view>
       </view>
     </view>
-    
-    <view class="banner-ad">
-      <text class="ad-text">广告位</text>
-    </view>
   </view>
 </template>
 
