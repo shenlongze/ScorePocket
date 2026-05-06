@@ -36,7 +36,7 @@
           </view>
           <view class="stat-item">
             <text class="stat-num">{{ player.stats.bonus }}</text>
-            <text class="stat-label">伴彩</text>
+            <text class="stat-label">半彩</text>
           </view>
           <view class="stat-item">
             <text class="stat-num">{{ player.stats.normalWin }}</text>
@@ -127,7 +127,7 @@
         @tap="handleBonusClick"
       >
         <text class="btn-icon">🎁</text>
-        <text class="btn-text">伴彩</text>
+        <text class="btn-text">半彩</text>
       </view>
     </view>
   </view>
@@ -355,7 +355,7 @@ function handleBonusClick() {
   saveHistoryState();
   handleBonus(currentPlayerId.value);
   players.value = loadPlayers();
-  uni.showToast({ title: '伴彩加分', icon: 'none' });
+  uni.showToast({ title: '半彩加分', icon: 'none' });
   saveGameState();
 }
 

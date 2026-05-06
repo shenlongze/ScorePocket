@@ -140,15 +140,14 @@
       </view>
 
       <view class="config-section">
-        <view class="section-title">伴彩(链)</view>
+        <view class="section-title">半彩(链)</view>
         
         <view class="config-item">
-          <text class="item-label">伴彩</text>
+          <text class="item-label">半彩</text>
           <switch 
             :checked="config.chainEnabled" 
             @change="config.chainEnabled = !config.chainEnabled"
           />
-          <text class="item-unit">{{ config.chainEnabled ? '开启' : '关闭' }}</text>
         </view>
 
         <view v-if="config.chainEnabled" class="chain-settings">
@@ -177,7 +176,7 @@
         <view class="section-title">点（倍数）</view>
         
         <view class="config-item">
-          <text class="item-label">开启倍数</text>
+          <text class="item-label">倍数</text>
           <switch 
             :checked="config.multiplierEnabled" 
             @change="config.multiplierEnabled = !config.multiplierEnabled"
