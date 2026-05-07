@@ -19,24 +19,24 @@
           <text class="stat-label">犯规</text>
         </view>
         <view class="stat-item">
-          <text class="stat-num">{{ player.stats.bonus }}</text>
-          <text class="stat-label">伴彩</text>
-        </view>
-        <view class="stat-item">
           <text class="stat-num">{{ player.stats.normalWin }}</text>
           <text class="stat-label">普胜</text>
-        </view>
-        <view class="stat-item">
-          <text class="stat-num">{{ player.stats.bigGolden }}</text>
-          <text class="stat-label">大金</text>
         </view>
         <view class="stat-item">
           <text class="stat-num">{{ player.stats.smallGolden }}</text>
           <text class="stat-label">小金</text>
         </view>
         <view class="stat-item">
+          <text class="stat-num">{{ player.stats.bigGolden }}</text>
+          <text class="stat-label">大金</text>
+        </view>
+        <view class="stat-item">
           <text class="stat-num">{{ player.stats.goldenNine }}</text>
           <text class="stat-label">黄金九</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-num">{{ player.stats.bonus }}</text>
+          <text class="stat-label">半彩</text>
         </view>
       </view>
     </view>
