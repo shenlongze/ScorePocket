@@ -37,6 +37,12 @@
 			}
 		},
 		{
+			"path": "pages/game/chinese8/settle",
+			"style": {
+				"navigationBarTitleText": "比赛结算"
+			}
+		},
+		{
 			"path": "pages/game/nineball/config",
 			"style": {
 				"navigationBarTitleText": "比赛配置"

@@ -1,0 +1,90 @@
+{
+    "appid" : "__UNI__036C535",
+    "name" : "ScorePocket",
+    "description" : "台球比分纪录",
+    "versionName" : "v0.0.1",
+    "locale" : "zh-Hans",
+    "mp-weixin" : {
+        "appid" : "wx0f0d5c56a7b35e28",
+        "setting" : {
+            "minified" : true
+        },
+        "uniStatistics" : {
+            "enable" : false
+        }
+    },
+    "uniStatistics" : {
+        "enable" : false
+    },
+    "app-harmony" : {
+        "uniStatistics" : {
+            "enable" : false
+        }
+    },
+    "app-plus" : {
+        "uniStatistics" : {
+            "enable" : false
+        }
+    },
+    "h5" : {
+        "uniStatistics" : {
+            "enable" : false
+        }
+    },
+    "mp-alipay" : {
+        "uniStatistics" : {
+            "enable" : false
+        }
+    },
+    "mp-baidu" : {
+        "uniStatistics" : {
+            "enable" : false
+        }
+    },
+    "mp-harmony" : {
+        "uniStatistics" : {
+            "enable" : false
+        }
+    },
+    "mp-jd" : {
+        "uniStatistics" : {
+            "enable" : false
+        }
+    },
+    "mp-kuaishou" : {
+        "uniStatistics" : {
+            "enable" : false
+        }
+    },
+    "mp-lark" : {
+        "uniStatistics" : {
+            "enable" : false
+        }
+    },
+    "mp-qq" : {
+        "uniStatistics" : {
+            "enable" : false
+        }
+    },
+    "mp-toutiao" : {
+        "uniStatistics" : {
+            "enable" : false
+        }
+    },
+    "mp-xhs" : {
+        "uniStatistics" : {
+            "enable" : false
+        }
+    },
+    "quickapp-webview-huawei" : {
+        "uniStatistics" : {
+            "enable" : false
+        }
+    },
+    "quickapp-webview-union" : {
+        "uniStatistics" : {
+            "enable" : false
+        }
+    },
+    "versionCode" : 1
+}

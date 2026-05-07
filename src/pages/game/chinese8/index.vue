@@ -32,41 +32,23 @@
       </view>
       
       <view class="layout-portrait" v-if="!isLandscape">
-        <view class="portrait-card" :class="{ active: currentPlayer === 0 }" @tap="handleSwitchPlayer(0)">
-          <view class="portrait-row">
-            <view class="portrait-left">
-              <view class="portrait-avatar">
-                <text>{{ player1.name.charAt(0) }}</text>
-              </view>
-              <view class="portrait-info">
-                <text class="portrait-name">{{ player1.name }}</text>
-              </view>
-            </view>
-            <view class="portrait-center">
-              <view class="portrait-score">{{ score1 }}</view>
-            </view>
-            <view class="portrait-buttons">
-              <view class="portrait-btn plus" @tap.stop="handleAddScore(0)">+</view>
-              <view class="portrait-btn minus" @tap.stop="handleSubtractScore(0)">-</view>
-            </view>
+        <view class="portrait-card" :class="{ active: currentPlayer === 0 }" @tap="switchPlayer">
+          <view class="portrait-header portrait-header-player1">
+            <view class="portrait-order-indicator">第{{ score1 > score2 ? 1 : score2 > score1 ? 2 : 1 }}位</view>
+            <text class="portrait-player-name">{{ player1.name }}</text>
+            <view v-if="currentPlayer === 0" class="portrait-current-indicator">当前</view>
           </view>
-          <view class="portrait-stats">
-            <view class="stat-group">
-              <view class="stat-btn" @tap.stop="handleSubtractZhaQing(0)">-</view>
-              <view class="stat-item">
-                <text class="stat-label">炸清:</text>
-                <text class="stat-value">{{ player1ZhaQing }}</text>
-              </view>
-              <view class="stat-btn plus" @tap.stop="handleAddZhaQing(0)">+</view>
+          <view class="portrait-score-area">
+            <view class="portrait-score">{{ score1 }}</view>
+          </view>
+          <view class="portrait-stats-row">
+            <view class="portrait-stat-item">
+              <text class="stat-num">{{ player1ZhaQing }}</text>
+              <text class="stat-label">炸清</text>
             </view>
-            <text class="stats-divider">|</text>
-            <view class="stat-group">
-              <view class="stat-btn" @tap.stop="handleSubtractJieQing(0)">-</view>
-              <view class="stat-item">
-                <text class="stat-label">接清:</text>
-                <text class="stat-value">{{ player1JieQing }}</text>
-              </view>
-              <view class="stat-btn plus" @tap.stop="handleAddJieQing(0)">+</view>
+            <view class="portrait-stat-item">
+              <text class="stat-num">{{ player1JieQing }}</text>
+              <text class="stat-label">接清</text>
             </view>
           </view>
         </view>
@@ -75,42 +57,50 @@
           <text>VS</text>
         </view>
         
-        <view class="portrait-card" :class="{ active: currentPlayer === 1 }" @tap="handleSwitchPlayer(1)">
-          <view class="portrait-row">
-            <view class="portrait-left">
-              <view class="portrait-avatar">
-                <text>{{ player2.name.charAt(0) }}</text>
-              </view>
-              <view class="portrait-info">
-                <text class="portrait-name">{{ player2.name }}</text>
-              </view>
+        <view class="portrait-card" :class="{ active: currentPlayer === 1 }" @tap="switchPlayer">
+          <view class="portrait-header portrait-header-player2">
+            <view class="portrait-order-indicator">第{{ score2 > score1 ? 1 : score1 > score2 ? 2 : 2 }}位</view>
+            <text class="portrait-player-name">{{ player2.name }}</text>
+            <view v-if="currentPlayer === 1" class="portrait-current-indicator">当前</view>
+          </view>
+          <view class="portrait-score-area">
+            <view class="portrait-score">{{ score2 }}</view>
+          </view>
+          <view class="portrait-stats-row">
+            <view class="portrait-stat-item">
+              <text class="stat-num">{{ player2ZhaQing }}</text>
+              <text class="stat-label">炸清</text>
             </view>
-            <view class="portrait-center">
-              <view class="portrait-score">{{ score2 }}</view>
-            </view>
-            <view class="portrait-buttons">
-              <view class="portrait-btn plus" @tap.stop="handleAddScore(1)">+</view>
-              <view class="portrait-btn minus" @tap.stop="handleSubtractScore(1)">-</view>
+            <view class="portrait-stat-item">
+              <text class="stat-num">{{ player2JieQing }}</text>
+              <text class="stat-label">接清</text>
             </view>
           </view>
-          <view class="portrait-stats">
-            <view class="stat-group">
-              <view class="stat-btn" @tap.stop="handleSubtractZhaQing(1)">-</view>
-              <view class="stat-item">
-                <text class="stat-label">炸清:</text>
-                <text class="stat-value">{{ player2ZhaQing }}</text>
-              </view>
-              <view class="stat-btn plus" @tap.stop="handleAddZhaQing(1)">+</view>
-            </view>
-            <text class="stats-divider">|</text>
-            <view class="stat-group">
-              <view class="stat-btn" @tap.stop="handleSubtractJieQing(1)">-</view>
-              <view class="stat-item">
-                <text class="stat-label">接清:</text>
-                <text class="stat-value">{{ player2JieQing }}</text>
-              </view>
-              <view class="stat-btn plus" @tap.stop="handleAddJieQing(1)">+</view>
-            </view>
+        </view>
+      </view>
+      
+      <view class="bottom-actions" v-if="!isLandscape">
+        <view class="action-btn-wrap">
+          <view class="bottom-btn switch-btn" @tap="switchPlayer">
+            <text>换选手</text>
+          </view>
+          <view class="bottom-btn plus-btn" @tap="handleAddScore(currentPlayer)">
+            <text>加分</text>
+          </view>
+          <view class="bottom-btn minus-btn" @tap="handleSubtractScore(currentPlayer)">
+            <text>减分</text>
+          </view>
+          <view class="bottom-btn zhaqing-btn" @tap="handleAddZhaQing(currentPlayer)">
+            <text>炸清</text>
+          </view>
+          <view class="bottom-btn jieqing-btn" @tap="handleAddJieQing(currentPlayer)">
+            <text>接清</text>
+          </view>
+          <view class="bottom-btn undo-btn" @tap="undoAction">
+            <text>撤回</text>
+          </view>
+          <view class="bottom-btn settle-btn" @tap="handleSettle">
+            <text>结算</text>
           </view>
         </view>
       </view>
@@ -199,12 +189,6 @@
         </view>
       </view>
     </view>
-    
-    <view class="banners-section">
-      <view class="banner-ad">
-        <text class="ad-text">广告位</text>
-      </view>
-    </view>
   </view>
 </template>
 
@@ -235,6 +219,32 @@ const player2ZhaQing = ref(0)
 const player2JieQing = ref(0)
 
 const isLandscape = ref(false)
+
+const lastRoundStartTime = ref(0)
+const roundHistory = ref<Array<{
+  player1Score: number
+  player2Score: number
+  player1ZhaQing: number
+  player1JieQing: number
+  player2ZhaQing: number
+  player2JieQing: number
+  roundTime: number
+  winner: number
+}>>([])
+
+interface GameState {
+  score1: number
+  score2: number
+  player1ZhaQing: number
+  player1JieQing: number
+  player2ZhaQing: number
+  player2JieQing: number
+  player1Wins: number
+  player2Wins: number
+  currentPlayer: number
+}
+
+const historyStack = ref<GameState[]>([])
 
 interface MatchRecord {
   player1Name: string
@@ -315,6 +325,14 @@ onMounted(() => {
     winRounds.value = parseInt(currentPage.options.round)
   }
   
+  if (currentPage?.options?.player1) {
+    player1.value = { name: decodeURIComponent(currentPage.options.player1) }
+  }
+  
+  if (currentPage?.options?.player2) {
+    player2.value = { name: decodeURIComponent(currentPage.options.player2) }
+  }
+  
   if (gameMode.value === 'simple' || gameMode.value === 'rounds') {
     showTimer.value = true
     startElapsedTimer()
@@ -322,36 +340,6 @@ onMounted(() => {
   
   checkOrientation()
   window.addEventListener('resize', handleResize)
-  
-  setTimeout(() => {
-    showPlayerNameInput(1)
-  }, 300)
-
-function showPlayerNameInput(playerNum: number) {
-  const placeholder = playerNum === 1 ? '请输入选手1名称' : '请输入选手2名称'
-  uni.showModal({
-    title: '开始对局',
-    editable: true,
-    placeholderText: placeholder,
-    confirmText: '确定',
-    cancelText: '使用默认',
-    success: (res) => {
-      if (res.confirm && res.content) {
-        if (playerNum === 1) {
-          player1.value = { name: res.content }
-        } else {
-          player2.value = { name: res.content }
-        }
-      }
-      
-      if (playerNum === 1) {
-        setTimeout(() => {
-          showPlayerNameInput(2)
-        }, 200)
-      }
-    }
-  })
-}
 })
 
 onUnmounted(() => {
@@ -434,6 +422,217 @@ function saveMatchRecord() {
   matchRecords.value.unshift(record)
 }
 
+function switchPlayer() {
+  saveState()
+  currentPlayer.value = currentPlayer.value === 0 ? 1 : 0
+}
+
+function handleSettle() {
+  if (isGameEnded.value) {
+    uni.showToast({ title: '比赛已结束', icon: 'none' })
+    return
+  }
+  
+  if (score1.value === 0 && score2.value === 0) {
+    uni.showToast({ title: '本局无分数，无法结算', icon: 'none' })
+    return
+  }
+  
+  uni.showModal({
+    title: '确认结算',
+    content: `${player1.value.name}: ${score1.value}分 (炸清${player1ZhaQing.value}次,接清${player1JieQing.value}次)\n${player2.value.name}: ${score2.value}分 (炸清${player2ZhaQing.value}次,接清${player2JieQing.value}次)\n\n确认结束本局比赛?`,
+    confirmText: '确认结算',
+    cancelText: '继续比赛',
+    confirmColor: '#cc7000',
+    success: (res) => {
+      if (res.confirm) {
+        stopTimer()
+        saveMatchRecord()
+        saveFinalMatchResult()
+        navigateToSettle()
+      }
+    }
+  })
+}
+
+function settleRound() {
+  const roundResult = {
+    player1Score: score1.value,
+    player2Score: score2.value,
+    player1ZhaQing: player1ZhaQing.value,
+    player1JieQing: player1JieQing.value,
+    player2ZhaQing: player2ZhaQing.value,
+    player2JieQing: player2JieQing.value,
+    roundTime: elapsedTime.value - lastRoundStartTime.value
+  }
+  
+  if (score1.value > score2.value) {
+    player1Wins.value++
+    roundResult['winner'] = 0
+    uni.showToast({ title: `${player1.value.name} 赢得本局`, icon: 'none' })
+  } else if (score2.value > score1.value) {
+    player2Wins.value++
+    roundResult['winner'] = 1
+    uni.showToast({ title: `${player2.value.name} 赢得本局`, icon: 'none' })
+  } else {
+    roundResult['winner'] = -1
+    uni.showToast({ title: '本局平局', icon: 'none' })
+  }
+  
+  roundHistory.value.push(roundResult)
+  saveMatchRecord()
+  
+  if (gameMode.value === 'rounds') {
+    checkGameEnd()
+  } else {
+    resetRoundScores()
+    lastRoundStartTime.value = elapsedTime.value
+  }
+}
+
+function checkGameEnd() {
+  if (player1Wins.value >= winRounds.value) {
+    endGame(0)
+  } else if (player2Wins.value >= winRounds.value) {
+    endGame(1)
+  } else {
+    resetRoundScores()
+  }
+}
+
+function endGame(winnerIndex: number) {
+  isGameEnded.value = true
+  stopTimer()
+  
+  if (score1.value > score2.value) {
+    player1Wins.value++
+  } else if (score2.value > score1.value) {
+    player2Wins.value++
+  }
+  
+  saveMatchRecord()
+  saveFinalMatchResult()
+  
+  const statsText = `${player1.value.name}${winnerIndex === 0 ? '(胜)' : ''} VS ${player2.value.name}${winnerIndex === 1 ? '(胜)' : ''}\n\n${score1.value}:${score2.value}\n\n${player1.value.name} 炸清:${player1ZhaQing.value} 接清:${player1JieQing.value}\n${player2.value.name} 炸清:${player2ZhaQing.value} 接清:${player2JieQing.value}`
+  
+  uni.showModal({
+    title: '本局结束',
+    content: statsText,
+    confirmText: '结算',
+    cancelText: '再来一局',
+    confirmColor: '#4a9eff',
+    cancelColor: '#cc7000',
+    success: (res) => {
+      if (res.confirm) {
+        navigateToSettle()
+      } else if (res.cancel) {
+        showRoundSettingModal()
+      }
+    }
+  })
+}
+
+function navigateToSettle() {
+  let timeUsed = elapsedTime.value
+  if (gameMode.value === 'timed') {
+    timeUsed = matchTime.value * 60 - remainingTime.value
+  }
+  
+  const stats = totalStats.value
+  
+  let records = [...matchRecords.value]
+  
+  if (records.length === 0 && score1.value > 0) {
+    const winner = score1.value > score2.value ? 0 : (score2.value > score1.value ? 1 : -1)
+    const record = {
+      player1Name: player1.value.name,
+      player2Name: player2.value.name,
+      player1Score: score1.value,
+      player2Score: score2.value,
+      player1ZhaQing: player1ZhaQing.value,
+      player1JieQing: player1JieQing.value,
+      player2ZhaQing: player2ZhaQing.value,
+      player2JieQing: player2JieQing.value,
+      winner: winner,
+      time: formatTime(elapsedTime.value - lastRoundStartTime.value)
+    }
+    records = [record]
+  }
+  
+  const settleData = {
+    player1Name: player1.value.name,
+    player2Name: player2.value.name,
+    player1Wins: player1Wins.value,
+    player2Wins: player2Wins.value,
+    player1TotalZhaQing: stats.player1TotalZhaQing,
+    player1TotalJieQing: stats.player1TotalJieQing,
+    player2TotalZhaQing: stats.player2TotalZhaQing,
+    player2TotalJieQing: stats.player2TotalJieQing,
+    lastRoundScore1: score1.value,
+    lastRoundScore2: score2.value,
+    lastRoundZq1: player1ZhaQing.value,
+    lastRoundJq1: player1JieQing.value,
+    lastRoundZq2: player2ZhaQing.value,
+    lastRoundJq2: player2JieQing.value,
+    matchTime: formatTime(timeUsed),
+    gameMode: gameMode.value,
+    winRounds: winRounds.value,
+    records: records
+  }
+  
+  uni.setStorageSync('matchSettleData', JSON.stringify(settleData))
+  
+  uni.redirectTo({
+    url: '/pages/game/chinese8/settle'
+  })
+}
+
+function saveFinalMatchResult() {
+  const finalResult = {
+    player1Name: player1.value.name,
+    player2Name: player2.value.name,
+    player1Wins: player1Wins.value,
+    player2Wins: player2Wins.value,
+    player1ZhaQing: player1ZhaQing.value,
+    player1JieQing: player1JieQing.value,
+    player2ZhaQing: player2ZhaQing.value,
+    player2JieQing: player2JieQing.value,
+    totalTime: elapsedTime.value,
+    date: new Date().toLocaleString('zh-CN'),
+    gameMode: gameMode.value,
+    winRounds: winRounds.value
+  }
+  
+  try {
+    const history = uni.getStorageSync('matchHistory') || []
+    history.unshift(finalResult)
+    
+    if (history.length > 100) {
+      history.pop()
+    }
+    
+    uni.setStorageSync('matchHistory', history)
+  } catch (e) {
+    console.error('保存比赛记录失败', e)
+  }
+}
+
+function goBackToHome() {
+  uni.reLaunch({
+    url: '/pages/index/index'
+  })
+}
+
+function resetRoundScores() {
+  score1.value = 0
+  score2.value = 0
+  player1ZhaQing.value = 0
+  player1JieQing.value = 0
+  player2ZhaQing.value = 0
+  player2JieQing.value = 0
+  historyStack.value = []
+}
+
 function endMatch() {
   saveMatchRecord()
   
@@ -458,7 +657,7 @@ function endMatch() {
   }
   
   uni.showModal({
-    title: '比赛结束',
+    title: '本局结束',
     content: result,
     confirmText: '返回',
     showCancel: false,
@@ -489,8 +688,43 @@ function goBack() {
   }
 }
 
+function saveState() {
+  const state: GameState = {
+    score1: score1.value,
+    score2: score2.value,
+    player1ZhaQing: player1ZhaQing.value,
+    player1JieQing: player1JieQing.value,
+    player2ZhaQing: player2ZhaQing.value,
+    player2JieQing: player2JieQing.value,
+    player1Wins: player1Wins.value,
+    player2Wins: player2Wins.value,
+    currentPlayer: currentPlayer.value
+  }
+  historyStack.value.push(state)
+  
+  if (historyStack.value.length > 50) {
+    historyStack.value.shift()
+  }
+}
+
 function undoAction() {
-  uni.showToast({ title: '撤销功能开发中', icon: 'none' })
+  if (historyStack.value.length === 0) {
+    uni.showToast({ title: '没有可撤回的操作', icon: 'none' })
+    return
+  }
+  
+  const prevState = historyStack.value.pop()!
+  score1.value = prevState.score1
+  score2.value = prevState.score2
+  player1ZhaQing.value = prevState.player1ZhaQing
+  player1JieQing.value = prevState.player1JieQing
+  player2ZhaQing.value = prevState.player2ZhaQing
+  player2JieQing.value = prevState.player2JieQing
+  player1Wins.value = prevState.player1Wins
+  player2Wins.value = prevState.player2Wins
+  currentPlayer.value = prevState.currentPlayer
+  
+  uni.showToast({ title: '已撤回', icon: 'none' })
 }
 
 function resetGame() {
@@ -522,6 +756,7 @@ function resetGame() {
 }
 
 function addScore(player: number, points: number = 1) {
+  saveState()
   if (player === 0) {
     score1.value += points
   } else {
@@ -532,6 +767,7 @@ function addScore(player: number, points: number = 1) {
 }
 
 function subtractScore(player: number) {
+  saveState()
   if (player === 0 && score1.value > 0) {
     score1.value--
   } else if (player === 1 && score2.value > 0) {
@@ -550,6 +786,7 @@ function handleSubtractScore(playerIndex: number) {
 }
 
 function markZhaQing(playerIndex: number) {
+  saveState()
   if (isGameEnded.value) return
   if (playerIndex === 0) {
     score1.value += 1
@@ -570,6 +807,7 @@ function handleMarkZhaQing(playerIndex: number) {
 }
 
 function markJieQing(playerIndex: number) {
+  saveState()
   if (isGameEnded.value) return
   if (playerIndex === 0) {
     score1.value += 1
@@ -672,39 +910,11 @@ function checkRoundWin() {
   if (isGameEnded.value) return
   
   if (score1.value >= winRounds.value) {
-    isGameEnded.value = true
-    stopTimer()
-    saveMatchRecord()
-    uni.showModal({
-      title: '比赛结束',
-      content: `${player1.value.name} 以 ${score1.value}:${score2.value} 赢得比赛！`,
-      confirmText: '返回',
-      cancelText: '再来一局',
-      success: (res) => {
-        if (res.cancel) {
-          showRoundSettingModal()
-        }
-      }
-    })
+    endGame(0)
   } else if (score2.value >= winRounds.value) {
-    isGameEnded.value = true
-    stopTimer()
-    saveMatchRecord()
-    uni.showModal({
-      title: '比赛结束',
-      content: `${player2.value.name} 以 ${score2.value}:${score1.value} 赢得比赛！`,
-      confirmText: '返回',
-      cancelText: '再来一局',
-      success: (res) => {
-        if (res.cancel) {
-          showRoundSettingModal()
-        }
-      }
-    })
+    endGame(1)
   }
 }
-
-function checkMatchWin() {}
 
 
 function formatTime(seconds: number): string {
@@ -717,15 +927,14 @@ function formatTime(seconds: number): string {
 <style lang="scss" scoped>
 .game-page {
   min-height: 100vh;
-  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-  padding-bottom: 120rpx;
-  overflow-x: hidden;
+  background: #000;
+  padding-bottom: 220rpx;
 }
 
 .main-content {
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
+  gap: 15rpx;
   padding: 0 20rpx;
   width: 100%;
   box-sizing: border-box;
@@ -735,7 +944,8 @@ function formatTime(seconds: number): string {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 60rpx 30rpx 30rpx;
+  padding: 60rpx 30rpx 20rpx;
+  background: #1a1a2e;
 }
 
 .game-header-landscape {
@@ -791,7 +1001,7 @@ function formatTime(seconds: number): string {
 }
 
 .timer-section {
-  background: rgba(74, 158, 255, 0.1);
+  background: rgba(204, 112, 0, 0.1);
   margin: 0 20rpx 20rpx;
   padding: 20rpx;
   border-radius: 16rpx;
@@ -811,13 +1021,13 @@ function formatTime(seconds: number): string {
 }
 
 .timer-value {
-  color: #4a9eff;
+  color: #cc7000;
   font-size: 48rpx;
   font-weight: bold;
   font-family: monospace;
   
   &.warning {
-    color: #ff6b6b;
+    color: #c44545;
   }
 }
 
@@ -830,12 +1040,12 @@ function formatTime(seconds: number): string {
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, #4a9eff 0%, #4ad964 100%);
+  background: linear-gradient(90deg, #cc7000 0%, #3d964d 100%);
   transition: width 1s linear;
 }
 
 .info-section {
-  background: rgba(74, 158, 255, 0.1);
+  background: rgba(204, 112, 0, 0.1);
   margin: 0 20rpx 12rpx;
   padding: 12rpx 20rpx;
   border-radius: 16rpx;
@@ -859,7 +1069,7 @@ function formatTime(seconds: number): string {
 }
 
 .rounds-progress {
-  color: #4a9eff;
+  color: #cc7000;
   font-size: 32rpx;
   font-weight: bold;
 }
@@ -872,19 +1082,53 @@ function formatTime(seconds: number): string {
 }
 
 .portrait-card {
-  display: flex;
-  flex-direction: column;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 20rpx;
-  padding: 18rpx;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16rpx;
+  overflow: hidden;
   border: 3rpx solid transparent;
   transition: all 0.3s ease;
   
   &.active {
-    background: linear-gradient(135deg, rgba(74, 158, 255, 0.15) 0%, rgba(74, 217, 100, 0.1) 100%);
-    border-color: rgba(74, 158, 255, 0.6);
-    box-shadow: 0 8rpx 32rpx rgba(74, 158, 255, 0.2);
+    border-color: #cc7000;
+    box-shadow: 0 0 20rpx rgba(204, 112, 0, 0.3);
   }
+}
+
+.portrait-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx;
+  
+  .portrait-player-name {
+    color: #fff;
+    font-size: 32rpx;
+    font-weight: bold;
+  }
+}
+
+.portrait-header-player1 {
+  background: #1a70cc;
+}
+
+.portrait-header-player2 {
+  background: #a52a2a;
+}
+
+.portrait-current-indicator {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 5rpx 15rpx;
+  border-radius: 10rpx;
+  color: #fff;
+  font-size: 22rpx;
+}
+
+.portrait-order-indicator {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 5rpx 10rpx;
+  border-radius: 8rpx;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 20rpx;
 }
 
 .portrait-row {
@@ -937,11 +1181,10 @@ function formatTime(seconds: number): string {
 }
 
 .portrait-score {
-  color: #4a9eff;
-  font-size: 110rpx;
+  color: #cc7000;
+  font-size: 80rpx;
   font-weight: bold;
   line-height: 1;
-  text-shadow: 0 0 30rpx rgba(74, 158, 255, 0.5);
 }
 
 .portrait-buttons {
@@ -1060,19 +1303,88 @@ function formatTime(seconds: number): string {
   }
 }
 
+.portrait-score-area {
+  padding: 30rpx;
+  display: flex;
+  justify-content: center;
+}
+
+.portrait-stats-row {
+  display: flex;
+  justify-content: space-around;
+  padding: 15rpx 10rpx;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.1);
+}
+
+.portrait-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5rpx;
+}
+
+.stat-num {
+  color: #cc7000;
+  font-size: 28rpx;
+  font-weight: bold;
+}
+
+.stat-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 20rpx;
+}
+
+.portrait-controls {
+  display: flex;
+  padding: 15rpx;
+  gap: 10rpx;
+}
+
+.portrait-control-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+  padding: 20rpx 10rpx;
+  background: #1a6b1a;
+  border-radius: 12rpx;
+  color: #fff;
+  font-size: 26rpx;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  
+  &:active {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  
+  &.minus {
+    background: #a52a2a;
+  }
+  
+  &.zhaqing-btn {
+    background: #cc7000;
+  }
+  
+  &.jieqing-btn {
+    background: #cc7000;
+  }
+}
+
 .portrait-vs {
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20rpx;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 16rpx;
   
   text {
-    color: #4a9eff;
+    color: #cc7000;
     font-size: 40rpx;
     font-weight: bold;
-    text-shadow: 0 0 20rpx rgba(74, 158, 255, 0.6);
+    text-shadow: 0 0 20rpx rgba(204, 112, 0, 0.4);
   }
 }
 
@@ -1298,22 +1610,6 @@ function formatTime(seconds: number): string {
   }
 }
 
-.banners-section {
-  padding: 20rpx;
-}
-
-.banner-ad {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 16rpx;
-  padding: 30rpx;
-  text-align: center;
-}
-
-.ad-text {
-  color: rgba(255, 255, 255, 0.3);
-  font-size: 24rpx;
-}
-
 .records-section {
   padding: 0 20rpx 20rpx;
 }
@@ -1402,7 +1698,7 @@ function formatTime(seconds: number): string {
 }
 
 .divider-score {
-  color: #4a9eff;
+  color: #cc7000;
   font-size: 24rpx;
   font-weight: bold;
 }
@@ -1418,7 +1714,7 @@ function formatTime(seconds: number): string {
   justify-content: center;
   gap: 16rpx;
   padding: 16rpx;
-  background: rgba(74, 158, 255, 0.1);
+  background: rgba(204, 112, 0, 0.1);
   border-radius: 12rpx;
   margin-bottom: 8rpx;
 }
@@ -1430,7 +1726,7 @@ function formatTime(seconds: number): string {
 }
 
 .summary-score {
-  color: #4a9eff;
+  color: #cc7000;
   font-size: 48rpx;
   font-weight: bold;
 }
@@ -1444,5 +1740,70 @@ function formatTime(seconds: number): string {
   height: 1rpx;
   background: rgba(255, 255, 255, 0.1);
   margin: 8rpx 0;
+}
+
+.bottom-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.9);
+  padding: 20rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  border-top: 1rpx solid rgba(255, 255, 255, 0.1);
+}
+
+.action-btn-wrap {
+  display: flex;
+  gap: 12rpx;
+}
+
+.bottom-btn {
+  flex: 1;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12rpx;
+  transition: all 0.2s ease;
+  
+  &:active {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  
+  text {
+    font-size: 24rpx;
+    font-weight: bold;
+    color: #fff;
+  }
+  
+  &.switch-btn {
+    background: #4a9eff;
+  }
+  
+  &.plus-btn {
+    background: #1a6b1a;
+  }
+  
+  &.minus-btn {
+    background: #a52a2a;
+  }
+  
+  &.zhaqing-btn {
+    background: #cc7000;
+  }
+  
+  &.jieqing-btn {
+    background: #cc7000;
+  }
+  
+  &.undo-btn {
+    background: #607d8b;
+  }
+  
+  &.settle-btn {
+    background: #9c27b0;
+  }
 }
 </style>
