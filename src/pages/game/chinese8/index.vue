@@ -513,7 +513,7 @@ function endGame(winnerIndex: number) {
   saveMatchRecord()
   saveFinalMatchResult()
   
-  const statsText = `${player1.value.name}${winnerIndex === 0 ? '(胜)' : ''} VS ${player2.value.name}${winnerIndex === 1 ? '(胜)' : ''}\n\n${score1.value}:${score2.value}\n\n${player1.value.name} 炸清:${player1ZhaQing.value} 接清:${player1JieQing.value}\n${player2.value.name} 炸清:${player2ZhaQing.value} 接清:${player2JieQing.value}`
+  const statsText = `${player1.value.name}${winnerIndex === 0 ? '(胜)' : ''} VS ${player2.value.name}${winnerIndex === 1 ? '(胜)' : ''}\n${score1.value}:${score2.value}\n${player1.value.name} 炸清:${player1ZhaQing.value} 接清:${player1JieQing.value}\n${player2.value.name} 炸清:${player2ZhaQing.value} 接清:${player2JieQing.value}`
   
   uni.showModal({
     title: '本局结束',
