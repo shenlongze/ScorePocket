@@ -35,34 +35,67 @@
             :placeholder="`选手${index + 1}`"
           />
         </view>
+      </view>
 
+      <view class="config-section">
+        <view class="section-title">比赛设置</view>
+        
         <view class="config-item">
           <text class="item-label">比赛模式</text>
           <view class="radio-group">
             <view 
-              :class="['radio-btn', { active: config.mode === 'single' }]"
-              @tap="config.mode = 'single'"
-            >单打</view>
+              :class="['radio-btn', { active: config.mode === 'frame' }]"
+              @tap="config.mode = 'frame'"
+            >抢局赛</view>
             <view 
-              :class="['radio-btn', { active: config.mode === 'double' }]"
-              @tap="config.mode = 'double'"
-            >双打</view>
+              :class="['radio-btn', { active: config.mode === 'timed' }]"
+              @tap="config.mode = 'timed'"
+            >计时赛</view>
           </view>
         </view>
-      </view>
-
-      <view class="config-section">
-        <view class="section-title">局数设置</view>
         
-        <view class="config-item">
-          <text class="item-label">比赛局数</text>
+        <view v-if="config.mode === 'frame'" class="config-item">
+          <text class="item-label">总局数</text>
           <input 
             type="number" 
             class="value-input" 
             v-model="gameRounds"
-            placeholder="不限制"
+            placeholder="请输入局数"
           />
           <text class="item-unit">局</text>
+        </view>
+        <view v-if="config.mode === 'frame' && gameRounds" class="config-item">
+          <text class="item-label">胜利条件</text>
+          <text class="win-condition">{{ gameRounds }}局{{ Math.ceil(parseInt(gameRounds) / 2) }}胜</text>
+        </view>
+        
+        <view v-if="config.mode === 'timed'" class="config-item">
+          <text class="item-label">比赛时长</text>
+          <input 
+            type="number" 
+            class="value-input" 
+            v-model="gameTimeMinutes"
+            placeholder="请输入时长"
+          />
+          <text class="item-unit">分钟</text>
+        </view>
+        
+        <view class="config-item">
+          <text class="item-label">犯规罚分</text>
+          <switch 
+            :checked="config.enableFoulPenalty" 
+            @change="config.enableFoulPenalty = !config.enableFoulPenalty"
+            color="#ff8c00"
+          />
+        </view>
+        
+        <view class="config-item">
+          <text class="item-label">选手计时</text>
+          <switch 
+            :checked="config.enablePlayerTimer" 
+            @change="config.enablePlayerTimer = !config.enablePlayerTimer"
+            color="#ff8c00"
+          />
         </view>
       </view>
 
@@ -77,30 +110,6 @@
             color="#ff8c00"
           />
         </view>
-
-        <view class="config-item">
-          <text class="item-label">犯规罚分</text>
-          <switch 
-            :checked="config.enableFoulPenalty" 
-            @change="config.enableFoulPenalty = !config.enableFoulPenalty"
-            color="#ff8c00"
-          />
-        </view>
-      </view>
-
-      <view class="config-section">
-        <view class="section-title">时间设置</view>
-        
-        <view class="config-item">
-          <text class="item-label">比赛时长</text>
-          <input 
-            type="number" 
-            class="value-input" 
-            v-model="gameTimeMinutes"
-            placeholder="不限制"
-          />
-          <text class="item-unit">分钟</text>
-        </view>
       </view>
     </scroll-view>
 
@@ -114,21 +123,23 @@ import { ref, reactive } from 'vue';
 interface SnookerConfig {
   playerCount: number;
   playerNames: string[];
-  mode: 'single' | 'double';
+  mode: 'frame' | 'timed';
   gameRounds: number | null;
   enableBreakStats: boolean;
   enableFoulPenalty: boolean;
   gameTimeMinutes: number | null;
+  enablePlayerTimer: boolean;
 }
 
 const config = reactive<SnookerConfig>({
   playerCount: 2,
   playerNames: ['选手1', '选手2'],
-  mode: 'single',
+  mode: 'frame',
   gameRounds: null,
   enableBreakStats: true,
   enableFoulPenalty: true,
-  gameTimeMinutes: null
+  gameTimeMinutes: null,
+  enablePlayerTimer: false
 });
 
 const gameRounds = ref('');
@@ -333,6 +344,12 @@ function startGame() {
 .radio-btn.active {
   background: #ff8c00;
   color: #fff;
+}
+
+.win-condition {
+  color: #ff8c00;
+  font-size: 28rpx;
+  font-weight: bold;
 }
 
 .start-btn {

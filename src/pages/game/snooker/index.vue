@@ -8,14 +8,11 @@
         <text class="game-title">斯诺克</text>
       </view>
       <view class="header-actions">
+        <view v-if="config.gameRounds" class="round-info">
+          <text class="round-label">第 {{ currentRound }} / {{ config.gameRounds }} 局</text>
+        </view>
         <view class="action-btn" @tap="undoAction">撤销</view>
         <view class="action-btn" @tap="resetGame">重置</view>
-      </view>
-    </view>
-
-    <view class="current-break-section">
-      <view v-if="config.gameRounds" class="round-info">
-        <text class="round-label">第 {{ currentRound }} / {{ config.gameRounds }} 局</text>
       </view>
     </view>
 
@@ -28,8 +25,17 @@
       >
         <view class="player-card-inner">
           <view class="header-row" :style="{ background: PLAYER_COLORS[index] }">
-            <text class="player-name">{{ player.name }}</text>
-            <view v-if="currentPlayer === index" class="current-indicator">当前</view>
+            <view class="header-left">
+              <text class="player-name">{{ player.name }}</text>
+            </view>
+            <view v-if="config.enablePlayerTimer" class="header-center">
+              <view class="player-timer">
+                {{ formatTime(playerTimers[index]) }}
+              </view>
+            </view>
+            <view class="header-right">
+              <view v-if="currentPlayer === index" class="current-indicator">当前</view>
+            </view>
           </view>
           <view class="main-area">
             <view class="score-box">
@@ -84,6 +90,16 @@
       </view>
     </view>
 
+    <view v-if="config.mode === 'frame' && config.gameRounds" class="match-score-section">
+      <view class="match-score">
+        <text class="player-name">{{ players[0].name }}</text>
+        <text class="player-rounds">{{ playerWins[0] || 0 }}</text>
+        <text class="score-divider">:</text>
+        <text class="player-rounds">{{ playerWins[1] || 0 }}</text>
+        <text class="player-name">{{ players[1].name }}</text>
+      </view>
+    </view>
+
     <view class="operation-records-section">
       <view class="records-header">
         <view class="records-title">操作记录</view>
@@ -108,10 +124,17 @@
     </view>
 
     <view class="balls-section">
+      <view class="remaining-score">
+        <text class="remaining-label">剩余最高分</text>
+        <view class="remaining-right">
+          <text v-if="isOverScore()" class="over-score">超分</text>
+          <text class="remaining-value">{{ calculateMaxRemainingScore() }}</text>
+        </view>
+      </view>
       <view class="balls-grid">
         <view 
           class="ball-btn"
-          :class="{ disabled: redBallsRemaining <= 0 }"
+          :class="{ disabled: redBallsRemaining <= 0 || (lastHitWasRed && redBallsRemaining > 0) }"
           @tap="addScoreSafe(1)"
         >
           <view class="ball-icon">🔴</view>
@@ -197,8 +220,48 @@
     </view>
 
     <view class="confirm-section">
-      <view class="confirm-btn" @tap="confirmWin">
-        <text>确认胜利</text>
+      <view class="confirm-btn secondary" @tap="confirmWin">
+        <text>结算本局</text>
+      </view>
+      <view class="confirm-btn primary" @tap="endMatch">
+        <text>结束比赛</text>
+      </view>
+    </view>
+
+    <view v-if="showSettleModalFlag" class="settle-modal-mask" @tap="closeSettleModal">
+      <view class="settle-modal" @tap.stop>
+        <view class="settle-modal-title">{{ getSettleWinner().name }} 获胜</view>
+        <view class="settle-modal-table">
+          <view class="table-row table-header">
+            <view class="table-cell">{{ players[0].name }}</view>
+            <view class="table-cell">1 VS {{ playerWins[1] || 0 }}</view>
+            <view class="table-cell">{{ players[1].name }}</view>
+          </view>
+          <view class="table-row">
+            <view class="table-cell">{{ players[0].score }}</view>
+            <view class="table-cell">得分</view>
+            <view class="table-cell">{{ players[1].score }}</view>
+          </view>
+          <view class="table-row">
+            <view class="table-cell">{{ players[0].highestBreak }}</view>
+            <view class="table-cell">最高单杆</view>
+            <view class="table-cell">{{ players[1].highestBreak }}</view>
+          </view>
+          <view class="table-row">
+            <view class="table-cell">{{ players[0].highestStreak }}</view>
+            <view class="table-cell">最高连击</view>
+            <view class="table-cell">{{ players[1].highestStreak }}</view>
+          </view>
+          <view class="table-row">
+            <view class="table-cell">{{ playerFifties[0] || 0 }}</view>
+            <view class="table-cell">50+</view>
+            <view class="table-cell">{{ playerFifties[1] || 0 }}</view>
+          </view>
+        </view>
+        <view class="settle-modal-actions">
+          <view class="settle-btn secondary" @tap="handleNextRound">开始下一局</view>
+          <view class="settle-btn primary" @tap="handleSettleMatch">结算比赛</view>
+        </view>
       </view>
     </view>
 
@@ -252,11 +315,12 @@ import { ref, reactive, onMounted } from 'vue';
 interface SnookerConfig {
   playerCount: number;
   playerNames: string[];
-  mode: 'single' | 'double';
+  mode: 'frame' | 'timed';
   gameRounds: number | null;
   enableBreakStats: boolean;
   enableFoulPenalty: boolean;
   gameTimeMinutes: number | null;
+  enablePlayerTimer: boolean;
 }
 
 interface Player {
@@ -284,11 +348,12 @@ const PLAYER_COLORS = [
 const config = reactive<SnookerConfig>({
   playerCount: 2,
   playerNames: ['选手1', '选手2'],
-  mode: 'single',
+  mode: 'frame',
   gameRounds: null,
   enableBreakStats: true,
   enableFoulPenalty: true,
-  gameTimeMinutes: null
+  gameTimeMinutes: null,
+  enablePlayerTimer: false
 });
 
 const players = ref<Player[]>([
@@ -306,6 +371,12 @@ const remainingColorBalls = ref<number[]>([2, 3, 4, 5, 6, 7]);
 const isColorPhase = ref(false);
 const showFoulModal = ref(false);
 const showRecordsModal = ref(false);
+
+const playerTimers = ref<number[]>([0, 0]);
+let timerInterval: number | null = null;
+
+const playerWins = ref<number[]>([0, 0]);
+const playerFifties = ref<number[]>([0, 0]);
 
 interface OperationRecord {
   id: number;
@@ -353,6 +424,8 @@ onMounted(() => {
   } catch (e) {
     console.error('Failed to load config:', e);
   }
+  
+  startTimer();
 });
 
 function initPlayers() {
@@ -370,6 +443,10 @@ function initPlayers() {
     pinkBallsHit: 0,
     blackBallsHit: 0
   }));
+  
+  playerTimers.value = Array(config.playerCount).fill(0);
+  playerWins.value = Array(config.playerCount).fill(0);
+  playerFifties.value = Array(config.playerCount).fill(0);
 }
 
 function addOperationRecord(record: Omit<OperationRecord, 'id' | 'time'>) {
@@ -443,15 +520,20 @@ function resetGame() {
     content: '确定要重置比赛吗？所有数据将被清除。',
     success: (res) => {
       if (res.confirm) {
+        stopTimer();
         initPlayers();
         currentPlayer.value = 0;
         currentBreak.value = 0;
         redBallsRemaining.value = 15;
+        currentRound.value = 1;
         lastHitWasRed.value = false;
         remainingColorBalls.value = [2, 3, 4, 5, 6, 7];
         isColorPhase.value = false;
         breakBalls.value = { red: 0, yellow: 0, green: 0, brown: 0, blue: 0, pink: 0, black: 0 };
+        playerWins.value = Array(config.playerCount).fill(0);
+        playerFifties.value = Array(config.playerCount).fill(0);
         historyStack.value = [];
+        startTimer();
         uni.showToast({ title: '已重置', icon: 'success' });
       }
     }
@@ -505,21 +587,6 @@ function addScore(points: number) {
 function addScoreSafe(points: number) {
   if (isProcessing.value) return;
   
-  if (points === 1 && redBallsRemaining.value <= 0) {
-    uni.showToast({ title: '红球已用完', icon: 'none' });
-    return;
-  }
-  
-  if (points === 1 && lastHitWasRed.value && redBallsRemaining.value > 0) {
-    uni.showToast({ title: '请先击打彩球', icon: 'none' });
-    return;
-  }
-  
-  if (points > 1 && !lastHitWasRed.value && redBallsRemaining.value > 0 && !isColorPhase.value) {
-    uni.showToast({ title: '请先击打红球', icon: 'none' });
-    return;
-  }
-  
   if (isColorPhase.value) {
     if (remainingColorBalls.value.length === 0) {
       uni.showToast({ title: '所有球已打完', icon: 'none' });
@@ -528,15 +595,6 @@ function addScoreSafe(points: number) {
     
     const nextBall = remainingColorBalls.value[0];
     if (points !== nextBall) {
-      const ballNames: Record<number, string> = {
-        2: '黄球',
-        3: '绿球',
-        4: '棕球',
-        5: '蓝球',
-        6: '粉球',
-        7: '黑球'
-      };
-      uni.showToast({ title: `请先击打${ballNames[nextBall]}`, icon: 'none' });
       return;
     }
   }
@@ -558,6 +616,20 @@ function addScoreSafe(points: number) {
   
   setTimeout(() => {
     isProcessing.value = false;
+    
+    if (isOverScore()) {
+      addOperationRecord({
+        playerName: player.name,
+        action: 'hit',
+        description: `${player.name} 超分！领先${player.score - players.value.reduce((sum, p, i) => i === currentPlayer.value ? sum : sum + p.score, 0)}分`
+      });
+    }
+    
+    if (redBallsRemaining.value === 0 && remainingColorBalls.value.length === 0) {
+      setTimeout(() => {
+        showSettleModal();
+      }, 500);
+    }
   }, 300);
 }
 
@@ -667,8 +739,34 @@ function selectFoulPoints(points: number) {
   }, 300);
 }
 
+function startTimer() {
+  if (!config.enablePlayerTimer || timerInterval) return;
+  timerInterval = setInterval(() => {
+    playerTimers.value[currentPlayer.value]++;
+  }, 1000) as unknown as number;
+}
+
+function stopTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+}
+
+function formatTime(seconds: number): string {
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  if (hrs > 0) {
+    return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
 function switchPlayer(index: number) {
   if (index !== currentPlayer.value) {
+    stopTimer();
+    
     const previousPlayer = players.value[currentPlayer.value];
     
     const totalBalls = breakBalls.value.red + breakBalls.value.yellow + breakBalls.value.green + 
@@ -703,6 +801,8 @@ function switchPlayer(index: number) {
     currentBreak.value = 0;
     lastHitWasRed.value = false;
     breakBalls.value = { red: 0, yellow: 0, green: 0, brown: 0, blue: 0, pink: 0, black: 0 };
+    
+    startTimer();
     
     if (totalBalls > 0) {
       addOperationRecord({
@@ -752,10 +852,23 @@ function nextRound() {
   lastHitWasRed.value = false;
   remainingColorBalls.value = [2, 3, 4, 5, 6, 7];
   isColorPhase.value = false;
+  breakBalls.value = { red: 0, yellow: 0, green: 0, brown: 0, blue: 0, pink: 0, black: 0 };
   
   players.value.forEach(player => {
+    player.score = 0;
     player.streak = 0;
+    player.highestStreak = 0;
+    player.highestBreak = 0;
+    player.redBallsHit = 0;
+    player.yellowBallsHit = 0;
+    player.greenBallsHit = 0;
+    player.brownBallsHit = 0;
+    player.blueBallsHit = 0;
+    player.pinkBallsHit = 0;
+    player.blackBallsHit = 0;
   });
+  
+  playerTimers.value = Array(config.playerCount).fill(0);
 }
 
 function nextRoundSafe() {
@@ -770,13 +883,147 @@ function nextRoundSafe() {
 }
 
 function confirmWin() {
-  const winner = players.value[currentPlayer.value];
+  showSettleModal();
+}
+
+const showSettleModalFlag = ref(false);
+
+function showSettleModal() {
+  showSettleModalFlag.value = true;
+}
+
+function closeSettleModal() {
+  showSettleModalFlag.value = false;
+}
+
+function handleNextRound() {
+  const winnerIndex = players.value.reduce((prev, curr, index) => 
+    curr.score > players.value[prev].score ? index : prev, 0
+  );
+  const winner = players.value[winnerIndex];
+  
+  playerWins.value[winnerIndex]++;
+  
+  if (currentBreak.value >= 50) {
+    playerFifties.value[currentPlayer.value]++;
+  }
+  
+  closeSettleModal();
+  
+  addOperationRecord({
+    playerName: winner.name,
+    action: 'switch',
+    description: `第${currentRound.value}局结束，${winner.name}获胜！比分：${players.value.map(p => p.name + ':' + p.score).join(' ')} | 最高单杆：${players.value.map(p => p.name + ':' + p.highestBreak).join(' ')} | 最高连击：${players.value.map(p => p.name + ':' + p.highestStreak).join(' ')}`
+  });
+  
+  if (config.mode === 'frame' && config.gameRounds) {
+    const winRounds = Math.ceil(config.gameRounds / 2);
+    
+    if (playerWins.value[winnerIndex] >= winRounds) {
+      uni.showModal({
+        title: '比赛结束',
+        content: `${winner.name} 以 ${playerWins.value[winnerIndex]} : ${playerWins.value.reduce((a, b, i) => i === winnerIndex ? a : a + b, 0)} 获胜！`,
+        showCancel: false,
+        success: () => {
+          uni.navigateBack();
+        }
+      });
+      return;
+    }
+  }
+  
+  if (config.gameRounds && currentRound.value >= config.gameRounds) {
+    const finalWinnerIndex = playerWins.value.indexOf(Math.max(...playerWins.value));
+    const finalWinner = players.value[finalWinnerIndex];
+    uni.showModal({
+      title: '比赛结束',
+      content: `${finalWinner.name} 最终获胜！`,
+      showCancel: false,
+      success: () => {
+        uni.navigateBack();
+      }
+    });
+    return;
+  }
+  
+  uni.showToast({ title: `${winner.name} 本局获胜！`, icon: 'success' });
+  
+  setTimeout(() => {
+    nextRound();
+    uni.showToast({ title: `第 ${currentRound.value} 局开始`, icon: 'none' });
+  }, 1000);
+}
+
+function handleSettleMatch() {
+  const winnerIndex = players.value.reduce((prev, curr, index) => 
+    curr.score > players.value[prev].score ? index : prev, 0
+  );
+  const winner = players.value[winnerIndex];
+  
+  playerWins.value[winnerIndex]++;
+  
+  closeSettleModal();
+  
+  addOperationRecord({
+    playerName: winner.name,
+    action: 'switch',
+    description: `比赛结束，${winner.name}最终获胜！最终比分：${players.value.map(p => p.name + ':' + p.score).join(' ')} | 最高单杆：${players.value.map(p => p.name + ':' + p.highestBreak).join(' ')} | 最高连击：${players.value.map(p => p.name + ':' + p.highestStreak).join(' ')}`
+  });
+  
   uni.showModal({
-    title: '确认胜利',
-    content: `${winner.name} 获胜？`,
+    title: '比赛结束',
+    content: `${winner.name} 最终获胜！\n\n本局比分：${players.value.map(p => p.name + ':' + p.score).join(' ')}`,
+    showCancel: false,
+    success: () => {
+      uni.navigateBack();
+    }
+  });
+}
+
+function calculateMaxRemainingScore(): number {
+  const colorBallsTotal = 27;
+  if (redBallsRemaining.value > 0) {
+    return redBallsRemaining.value * 8 + colorBallsTotal;
+  }
+  return colorBallsTotal;
+}
+
+function isOverScore(): boolean {
+  const currentPlayerScore = players.value[currentPlayer.value].score;
+  const otherPlayersScore = players.value.reduce((sum, p, i) => 
+    i === currentPlayer.value ? sum : sum + p.score, 0
+  );
+  const scoreDiff = currentPlayerScore - otherPlayersScore;
+  const remainingScore = calculateMaxRemainingScore();
+  return scoreDiff > remainingScore;
+}
+
+function getSettleWinner() {
+  const winnerIndex = players.value.reduce((prev, curr, index) => 
+    curr.score > players.value[prev].score ? index : prev, 0
+  );
+  return players.value[winnerIndex];
+}
+
+function endMatch() {
+  uni.showModal({
+    title: '结束比赛',
+    content: '确定要结束比赛吗？',
     success: (res) => {
       if (res.confirm) {
-        uni.showToast({ title: `${winner.name} 获胜！`, icon: 'success' });
+        const winnerIndex = players.value.reduce((prev, curr, index) => 
+          curr.score > players.value[prev].score ? index : prev, 0
+        );
+        const winner = players.value[winnerIndex];
+        
+        uni.showModal({
+          title: '比赛结束',
+          content: `${winner.name} 获胜！\n\n本局比分：${players.value.map(p => p.name + ':' + p.score).join(' ')}`,
+          showCancel: false,
+          success: () => {
+            uni.navigateBack();
+          }
+        });
       }
     }
   });
@@ -858,11 +1105,14 @@ function confirmWin() {
 .round-info {
   display: flex;
   align-items: center;
+  padding: 15rpx 25rpx;
+  background: rgba(255, 140, 0, 0.2);
+  border-radius: 20rpx;
 }
 
 .round-label {
   color: #ff8c00;
-  font-size: 28rpx;
+  font-size: 26rpx;
   font-weight: bold;
 }
 
@@ -919,11 +1169,15 @@ function confirmWin() {
 }
 
 .current-indicator {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 5rpx 15rpx;
-  border-radius: 10rpx;
   color: #fff;
   font-size: 22rpx;
+}
+
+.player-timer {
+  color: #fff;
+  font-size: 28rpx;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
 }
 
 .player-card-inner {
@@ -936,6 +1190,21 @@ function confirmWin() {
   justify-content: space-between;
   align-items: center;
   padding: 15rpx 20rpx;
+}
+
+.header-left {
+  flex: 1;
+  text-align: left;
+}
+
+.header-center {
+  flex: 1;
+  text-align: center;
+}
+
+.header-right {
+  flex: 1;
+  text-align: right;
 }
 
 .main-area {
@@ -994,6 +1263,37 @@ function confirmWin() {
   padding: 10rpx 20rpx;
   border-top: 1rpx solid rgba(255, 255, 255, 0.1);
   background: rgba(0, 0, 0, 0.3);
+}
+
+.match-score-section {
+  padding: 20rpx;
+  margin: 15rpx;
+  background: rgba(26, 26, 46, 0.95);
+  border-radius: 12rpx;
+}
+
+.match-score {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.match-score .player-name {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 28rpx;
+}
+
+.player-rounds {
+  color: #ff8c00;
+  font-size: 48rpx;
+  font-weight: bold;
+}
+
+.score-divider {
+  color: #ff8c00;
+  font-size: 40rpx;
+  font-weight: bold;
 }
 
 .ball-stat {
@@ -1170,6 +1470,42 @@ function confirmWin() {
   border-top: 1rpx solid rgba(255, 255, 255, 0.1);
 }
 
+.remaining-score {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15rpx 20rpx;
+  margin-bottom: 15rpx;
+  background: rgba(255, 140, 0, 0.1);
+  border-radius: 12rpx;
+}
+
+.remaining-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 26rpx;
+}
+
+.remaining-right {
+  display: flex;
+  align-items: center;
+  gap: 15rpx;
+}
+
+.over-score {
+  color: #ff4444;
+  font-size: 24rpx;
+  font-weight: bold;
+  padding: 5rpx 12rpx;
+  background: rgba(255, 68, 68, 0.2);
+  border-radius: 8rpx;
+}
+
+.remaining-value {
+  color: #ff8c00;
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
 .balls-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1291,20 +1627,37 @@ function confirmWin() {
   padding: 20rpx;
   background: #1a1a2e;
   border-top: 1rpx solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  gap: 20rpx;
 }
 
 .confirm-btn {
+  flex: 1;
   height: 100rpx;
-  background: linear-gradient(135deg, #ff8c00 0%, #ff6b35 100%);
   border-radius: 16rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   
   text {
-    color: #fff;
     font-size: 32rpx;
     font-weight: bold;
+  }
+  
+  &.secondary {
+    background: rgba(255, 255, 255, 0.1);
+    
+    text {
+      color: rgba(255, 255, 255, 0.8);
+    }
+  }
+  
+  &.primary {
+    background: linear-gradient(135deg, #ff8c00 0%, #ff6b35 100%);
+    
+    text {
+      color: #fff;
+    }
   }
 }
 
@@ -1371,5 +1724,99 @@ function confirmWin() {
 .foul-points-label {
   color: rgba(255, 255, 255, 0.7);
   font-size: 20rpx;
+}
+
+.settle-modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.settle-modal {
+  width: 85%;
+  background: rgba(26, 26, 46, 0.98);
+  border-radius: 24rpx;
+  border: 2rpx solid #ff8c00;
+  overflow: hidden;
+}
+
+.settle-modal-title {
+  padding: 40rpx 30rpx;
+  text-align: center;
+  color: #ff8c00;
+  font-size: 40rpx;
+  font-weight: bold;
+  background: linear-gradient(135deg, rgba(255, 140, 0, 0.2) 0%, rgba(255, 107, 53, 0.2) 100%);
+}
+
+.settle-modal-table {
+  padding: 20rpx;
+}
+
+.table-row {
+  display: flex;
+  border-bottom: 1rpx solid rgba(255, 255, 255, 0.1);
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  &.table-header {
+    background: rgba(255, 140, 0, 0.1);
+  }
+}
+
+.table-cell {
+  flex: 1;
+  padding: 20rpx 10rpx;
+  text-align: center;
+  color: #fff;
+  font-size: 26rpx;
+  
+  .table-header & {
+    color: #ff8c00;
+    font-weight: bold;
+    font-size: 28rpx;
+  }
+}
+
+.settle-modal-actions {
+  display: flex;
+  gap: 20rpx;
+  padding: 30rpx;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.1);
+}
+
+.settle-btn {
+  flex: 1;
+  height: 90rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  font-weight: bold;
+  transition: all 0.3s;
+  
+  &:active {
+    transform: scale(0.98);
+  }
+  
+  &.secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  &.primary {
+    background: linear-gradient(135deg, #ff8c00 0%, #ff6b35 100%);
+    color: #fff;
+  }
 }
 </style>
