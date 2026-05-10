@@ -118,21 +118,6 @@ async function goToProfile() {
 }
 
 function startGame(gameType: string) {
-  if (gameType === '斯诺克' && !isMember.value) {
-    uni.showModal({
-      title: '会员专属',
-      content: '斯诺克玩法为会员专属，是否开通会员？',
-      confirmText: '去开通',
-      cancelText: '取消',
-      success: (res) => {
-        if (res.confirm) {
-          uni.navigateTo({ url: '/pages/pay/index' })
-        }
-      }
-    })
-    return
-  }
-  
   if (gameType === '中式八球') {
     uni.navigateTo({ url: '/pages/game/mode-select/index' })
     return
@@ -144,7 +129,7 @@ function startGame(gameType: string) {
   }
   
   if (gameType === '斯诺克') {
-    uni.navigateTo({ url: '/pages/game/snooker/index' })
+    uni.navigateTo({ url: '/pages/game/snooker/config' })
     return
   }
   

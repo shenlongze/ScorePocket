@@ -61,6 +61,12 @@
 			}
 		},
 		{
+			"path": "pages/game/snooker/config",
+			"style": {
+				"navigationBarTitleText": "比赛配置"
+			}
+		},
+		{
 			"path": "pages/game/snooker/index",
 			"style": {
 				"navigationBarTitleText": "斯诺克"
