@@ -6,10 +6,9 @@
         <text class="app-title">台球计分</text>
       </view>
       <view class="user-info" @tap="goToProfile">
-        <view class="avatar" v-if="!userInfo.avatar">
+        <view class="avatar">
           <text>{{ userInfo.nickname.charAt(0) }}</text>
         </view>
-        <image v-else class="avatar-img" :src="userInfo.avatar" mode="aspectFill" />
         <text class="nickname">{{ userInfo.nickname }}</text>
       </view>
     </view>
@@ -20,25 +19,25 @@
         
         <view class="mode-grid">
           <view class="mode-card" @tap="startGame('中式八球')">
-            <view class="mode-icon">🖤</view>
+            <view class="mode-icon">🎱</view>
             <text class="mode-name">中式八球</text>
             <text class="mode-desc">国标黑八</text>
           </view>
           
           <view class="mode-card" @tap="startGame('九球')">
-            <view class="mode-icon">🔴</view>
+            <view class="mode-icon">9️⃣</view>
             <text class="mode-name">九球</text>
             <text class="mode-desc">按序击打</text>
           </view>
           
           <view class="mode-card" @tap="startGame('六球')">
-            <view class="mode-icon">🟡</view>
+            <view class="mode-icon">🔶</view>
             <text class="mode-name">六球</text>
             <text class="mode-desc">快速对决</text>
           </view>
           
           <view class="mode-card" @tap="startGame('斯诺克')">
-            <view class="mode-icon">🟢</view>
+            <view class="mode-icon">🔴</view>
             <text class="mode-name">斯诺克</text>
             <text class="mode-desc">会员专属</text>
           </view>
@@ -74,46 +73,21 @@
           </view>
         </view>
       </view>
-      
-      <view class="member-banner" v-if="!isMemberValue" @tap="goToPay">
-        <view class="banner-content">
-          <text class="banner-title">🎯 开通会员</text>
-          <text class="banner-desc">解锁全玩法、联机、赛事等专属功能</text>
-        </view>
-        <view class="banner-btn">立即开通</view>
-      </view>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { getUserInfo, isMember, wechatLogin } from '@/utils/auth'
+import { getUserInfo } from '@/utils/auth'
 
 const userInfo = ref({ nickname: '游客', avatar: '' })
-const isMemberValue = ref(false)
 
 onMounted(() => {
   userInfo.value = getUserInfo()
-  isMemberValue.value = isMember()
 })
 
-async function goToProfile() {
-  if (userInfo.value.nickname === '游客') {
-    try {
-      uni.showLoading({ title: '登录中...' })
-      const user = await wechatLogin()
-      userInfo.value = user
-      isMemberValue.value = isMember()
-      uni.hideLoading()
-      uni.showToast({ title: '登录成功', icon: 'success' })
-    } catch (error) {
-      uni.hideLoading()
-      uni.showToast({ title: '登录失败', icon: 'none' })
-      console.error('Login failed:', error)
-    }
-    return
-  }
+function goToProfile() {
   uni.switchTab({ url: '/pages/profile/index' })
 }
 
@@ -133,39 +107,24 @@ function startGame(gameType: string) {
     return
   }
   
+  if (gameType === '自定义') {
+    uni.navigateTo({ url: '/pages/coming-soon/index?type=custom' })
+    return
+  }
+  
   uni.navigateTo({ url: `/pages/game/onevone/index?gameType=${encodeURIComponent(gameType)}` })
 }
 
 function startZambo() {
-  if (!isMember.value) {
-    uni.showModal({
-      title: '会员专属',
-      content: '抓迷糊玩法为会员专属，是否开通会员或看广告免费试用？',
-      confirmText: '去开通',
-      cancelText: '看广告试用',
-      success: (res) => {
-        if (res.confirm) {
-          uni.navigateTo({ url: '/pages/pay/index' })
-        } else {
-          uni.showToast({ title: '暂未开通广告', icon: 'none' })
-        }
-      }
-    })
-    return
-  }
-  uni.navigateTo({ url: '/pages/game/zambo/index' })
+  uni.navigateTo({ url: '/pages/coming-soon/index?type=chaos' })
 }
 
 function goToTournament() {
-  uni.switchTab({ url: '/pages/tournament/list' })
+  uni.navigateTo({ url: '/pages/coming-soon/index?type=tournament' })
 }
 
 function goToRecords() {
-  uni.switchTab({ url: '/pages/match/list' })
-}
-
-function goToPay() {
-  uni.navigateTo({ url: '/pages/pay/index' })
+  uni.navigateTo({ url: '/pages/coming-soon/index?type=match' })
 }
 </script>
 
@@ -223,13 +182,6 @@ function goToPay() {
   font-size: 22rpx;
 }
 
-.avatar-img {
-  width: 50rpx;
-  height: 50rpx;
-  border-radius: 50%;
-  margin-right: 10rpx;
-}
-
 .nickname {
   color: #fff;
   font-size: 26rpx;
@@ -270,6 +222,11 @@ function goToPay() {
 .mode-icon {
   font-size: 50rpx;
   margin-bottom: 15rpx;
+  width: 80rpx;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mode-name {
@@ -319,53 +276,5 @@ function goToPay() {
 .action-desc {
   color: rgba(255, 255, 255, 0.6);
   font-size: 22rpx;
-}
-
-.member-banner {
-  background: linear-gradient(135deg, #ff9500 0%, #ff6b35 100%);
-  border-radius: 20rpx;
-  padding: 25rpx;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20rpx;
-}
-
-.banner-content {
-  flex: 1;
-}
-
-.banner-title {
-  color: #fff;
-  font-size: 28rpx;
-  font-weight: bold;
-  display: block;
-  margin-bottom: 5rpx;
-}
-
-.banner-desc {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 22rpx;
-}
-
-.banner-btn {
-  background: #fff;
-  color: #ff9500;
-  padding: 15rpx 30rpx;
-  border-radius: 30rpx;
-  font-size: 24rpx;
-  font-weight: bold;
-}
-
-.banner-ad {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 16rpx;
-  padding: 30rpx;
-  text-align: center;
-}
-
-.ad-text {
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 24rpx;
 }
 </style>

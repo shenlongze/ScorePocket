@@ -32,7 +32,7 @@
       </view>
       
       <view class="layout-portrait" v-if="!isLandscape">
-        <view class="portrait-card" :class="{ active: currentPlayer === 0 }" @tap="switchPlayer">
+        <view class="portrait-card" :class="{ active: currentPlayer === 0 }" @tap="switchToPlayer(0)">
           <view class="portrait-header portrait-header-player1">
             <view class="portrait-order-indicator">第{{ score1 > score2 ? 1 : score2 > score1 ? 2 : 1 }}位</view>
             <text class="portrait-player-name">{{ player1.name }}</text>
@@ -57,7 +57,7 @@
           <text>VS</text>
         </view>
         
-        <view class="portrait-card" :class="{ active: currentPlayer === 1 }" @tap="switchPlayer">
+        <view class="portrait-card" :class="{ active: currentPlayer === 1 }" @tap="switchToPlayer(1)">
           <view class="portrait-header portrait-header-player2">
             <view class="portrait-order-indicator">第{{ score2 > score1 ? 1 : score1 > score2 ? 2 : 2 }}位</view>
             <text class="portrait-player-name">{{ player2.name }}</text>
@@ -79,9 +79,32 @@
         </view>
       </view>
       
+      <view class="operation-records-section" v-if="!isLandscape">
+        <view class="records-header">
+          <view class="records-title">操作记录</view>
+          <view class="records-more-btn" @tap="showFullRecords">
+            <text>更多</text>
+          </view>
+        </view>
+        <scroll-view class="records-list" scroll-y>
+          <view 
+            v-for="record in operationRecords" 
+            :key="record.id" 
+            class="record-item"
+            :class="record.action"
+          >
+            <text class="record-time">{{ record.time }}</text>
+            <text class="record-desc">{{ record.description }}</text>
+          </view>
+          <view v-if="operationRecords.length === 0" class="empty-records">
+            <text>暂无操作记录</text>
+          </view>
+        </scroll-view>
+      </view>
+
       <view class="bottom-actions" v-if="!isLandscape">
         <view class="action-btn-wrap">
-          <view class="bottom-btn switch-btn" @tap="switchPlayer">
+          <view class="bottom-btn switch-btn" @tap="switchToPlayer(currentPlayer === 0 ? 1 : 0)">
             <text>换选手</text>
           </view>
           <view class="bottom-btn plus-btn" @tap="handleAddScore(currentPlayer)">
@@ -189,6 +212,31 @@
         </view>
       </view>
     </view>
+
+    <view v-if="showRecordsModal" class="modal-overlay" @tap="closeRecordsModal">
+      <view class="records-modal" @tap.stop>
+        <view class="records-modal-header">
+          <text class="records-modal-title">操作记录</text>
+          <view class="records-modal-close" @tap="closeRecordsModal">
+            <text>✕</text>
+          </view>
+        </view>
+        <scroll-view class="records-modal-list" scroll-y>
+          <view 
+            v-for="record in operationRecords" 
+            :key="record.id" 
+            class="record-item"
+            :class="record.action"
+          >
+            <text class="record-time">{{ record.time }}</text>
+            <text class="record-desc">{{ record.description }}</text>
+          </view>
+          <view v-if="operationRecords.length === 0" class="empty-records">
+            <text>暂无操作记录</text>
+          </view>
+        </scroll-view>
+      </view>
+    </view>
   </view>
 </template>
 
@@ -245,6 +293,39 @@ interface GameState {
 }
 
 const historyStack = ref<GameState[]>([])
+
+interface OperationRecord {
+  id: number;
+  time: string;
+  action: 'add' | 'subtract' | 'zhaqing' | 'jieqing' | 'switch' | 'undo' | 'settle';
+  description: string;
+}
+
+const operationRecords = ref<OperationRecord[]>([]);
+let recordId = 0;
+const showRecordsModal = ref(false);
+
+function addOperationRecord(action: OperationRecord['action'], description: string) {
+  const now = new Date();
+  const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+  operationRecords.value.unshift({
+    id: ++recordId,
+    time: timeStr,
+    action,
+    description
+  });
+  if (operationRecords.value.length > 100) {
+    operationRecords.value.pop();
+  }
+}
+
+function showFullRecords() {
+  showRecordsModal.value = true;
+}
+
+function closeRecordsModal() {
+  showRecordsModal.value = false;
+}
 
 interface MatchRecord {
   player1Name: string
@@ -422,9 +503,12 @@ function saveMatchRecord() {
   matchRecords.value.unshift(record)
 }
 
-function switchPlayer() {
+function switchToPlayer(playerId: number) {
   saveState()
-  currentPlayer.value = currentPlayer.value === 0 ? 1 : 0
+  const prevPlayer = currentPlayer.value === 0 ? player1.value.name : player2.value.name
+  const newPlayer = playerId === 0 ? player1.value.name : player2.value.name
+  currentPlayer.value = playerId
+  addOperationRecord('switch', `切换选手：${prevPlayer} → ${newPlayer}`)
 }
 
 function handleSettle() {
@@ -777,12 +861,16 @@ function subtractScore(player: number) {
 
 function handleAddScore(playerIndex: number) {
   if (isGameEnded.value) return
+  const playerName = playerIndex === 0 ? player1.value.name : player2.value.name
   addScore(playerIndex)
+  addOperationRecord('add', `${playerName} +1分`)
 }
 
 function handleSubtractScore(playerIndex: number) {
   if (isGameEnded.value) return
+  const playerName = playerIndex === 0 ? player1.value.name : player2.value.name
   subtractScore(playerIndex)
+  addOperationRecord('subtract', `${playerName} -1分`)
 }
 
 function markZhaQing(playerIndex: number) {
@@ -829,6 +917,7 @@ function handleMarkJieQing(playerIndex: number) {
 
 function handleAddZhaQing(playerIndex: number) {
   if (isGameEnded.value) return
+  const playerName = playerIndex === 0 ? player1.value.name : player2.value.name
   if (playerIndex === 0) {
     player1ZhaQing.value++
     score1.value++
@@ -837,6 +926,7 @@ function handleAddZhaQing(playerIndex: number) {
     score2.value++
   }
   incrementZhaQing()
+  addOperationRecord('zhaqing', `${playerName} 炸清 +1分`)
   uni.showToast({ title: '炸清 +1', icon: 'none' })
   checkRoundWin()
 }
@@ -856,6 +946,7 @@ function handleSubtractZhaQing(playerIndex: number) {
 
 function handleAddJieQing(playerIndex: number) {
   if (isGameEnded.value) return
+  const playerName = playerIndex === 0 ? player1.value.name : player2.value.name
   if (playerIndex === 0) {
     player1JieQing.value++
     score1.value++
@@ -864,6 +955,7 @@ function handleAddJieQing(playerIndex: number) {
     score2.value++
   }
   incrementJieQing()
+  addOperationRecord('jieqing', `${playerName} 接清 +1分`)
   uni.showToast({ title: '接清 +1', icon: 'none' })
   checkRoundWin()
 }
@@ -1805,5 +1897,142 @@ function formatTime(seconds: number): string {
   &.settle-btn {
     background: #9c27b0;
   }
+}
+
+.operation-records-section {
+  padding: 15rpx 20rpx;
+  background: rgba(26, 26, 46, 0.95);
+  border-radius: 12rpx;
+  margin: 15rpx 20rpx;
+  margin-bottom: 15rpx;
+  border: 1rpx solid rgba(255, 140, 0, 0.2);
+}
+
+.records-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+  padding-bottom: 8rpx;
+  border-bottom: 1rpx solid rgba(255, 255, 255, 0.1);
+}
+
+.records-title {
+  color: #ff8c00;
+  font-size: 26rpx;
+  font-weight: bold;
+}
+
+.records-more-btn {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 24rpx;
+  padding: 8rpx 16rpx;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20rpx;
+}
+
+.records-list {
+  max-height: 200rpx;
+}
+
+.record-item {
+  display: flex;
+  gap: 15rpx;
+  padding: 10rpx 0;
+  border-bottom: 1rpx solid rgba(255, 255, 255, 0.05);
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.record-time {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 22rpx;
+  font-family: monospace;
+  flex-shrink: 0;
+}
+
+.record-desc {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 24rpx;
+  flex: 1;
+}
+
+.record-item.win .record-desc {
+  color: #ffd93d;
+}
+
+.record-item.subtract .record-desc {
+  color: #ff6b6b;
+}
+
+.record-item.zhaqing .record-desc {
+  color: #ffd93d;
+}
+
+.record-item.jieqing .record-desc {
+  color: #a855f7;
+}
+
+.record-item.switch .record-desc {
+  color: #4a9eff;
+}
+
+.empty-records {
+  text-align: center;
+  padding: 20rpx;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 24rpx;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.records-modal {
+  width: 90%;
+  max-height: 70vh;
+  background: #1a1a2e;
+  border-radius: 20rpx;
+  overflow: hidden;
+}
+
+.records-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25rpx 30rpx;
+  border-bottom: 1rpx solid rgba(255, 255, 255, 0.1);
+}
+
+.records-modal-title {
+  color: #ff8c00;
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+.records-modal-close {
+  width: 50rpx;
+  height: 50rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 32rpx;
+}
+
+.records-modal-list {
+  max-height: 60vh;
+  padding: 15rpx 30rpx 30rpx;
 }
 </style>

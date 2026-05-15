@@ -138,7 +138,17 @@ export function getCurrentPlayers(): Player[] {
 export function getMatchConfig(): MatchConfig {
   try {
     const data = uni.getStorageSync('nineball_config');
-    return data ? JSON.parse(data) : {
+    if (data) {
+      const config = JSON.parse(data);
+      // 向后兼容：添加缺失的犯规配置
+      if (!config.scoreSettings.foul) config.scoreSettings.foul = 1;
+      if (!config.foulScope) config.foulScope = 'prev';
+      if (!config.smallGoldenScope) config.smallGoldenScope = 'prev';
+      if (!config.bigGoldenScope) config.bigGoldenScope = 'all';
+      if (!config.goldenNineScope) config.goldenNineScope = 'all';
+      return config;
+    }
+    return {
       targetBalls: 9,
       playerCount: 2,
       playerNames: ['玩家1', '玩家2'],
@@ -147,8 +157,13 @@ export function getMatchConfig(): MatchConfig {
         normalWin: 4,
         smallGolden: 7,
         bigGolden: 10,
-        goldenNine: 4
+        goldenNine: 4,
+        foul: 1
       },
+      smallGoldenScope: 'prev',
+      bigGoldenScope: 'all',
+      goldenNineScope: 'all',
+      foulScope: 'prev',
       chainEnabled: false,
       chainSettings: {
         requiredStreak: 3,
@@ -169,8 +184,13 @@ export function getMatchConfig(): MatchConfig {
         normalWin: 4,
         smallGolden: 7,
         bigGolden: 10,
-        goldenNine: 4
+        goldenNine: 4,
+        foul: 1
       },
+      smallGoldenScope: 'prev',
+      bigGoldenScope: 'all',
+      goldenNineScope: 'all',
+      foulScope: 'prev',
       chainEnabled: false,
       chainSettings: {
         requiredStreak: 3,
@@ -228,13 +248,13 @@ export function calculateWinScore(scoreType: 'normalWin' | 'smallGolden' | 'bigG
       isPrevOnly = true;
       break;
     case 'smallGolden':
-      isPrevOnly = config.smallGoldenScope === 'prev';
+      isPrevOnly = true;
       break;
     case 'bigGolden':
-      isPrevOnly = config.bigGoldenScope === 'prev';
+      isPrevOnly = false;
       break;
     case 'goldenNine':
-      isPrevOnly = config.goldenNineScope === 'prev';
+      isPrevOnly = false;
       break;
   }
   
@@ -304,28 +324,47 @@ export function loadRecords(): ActionRecord[] {
 }
 
 export function handleFoul(foulerId: number): void {
+  const config = getMatchConfig();
   const players = getCurrentPlayers();
   const fouler = players.find(p => p.id === foulerId);
   if (!fouler) return;
   
   const nextPlayerId = getNextPlayer(foulerId);
-  const prevPlayerId = getPrevPlayer(foulerId);
   const nextPlayer = players.find(p => p.id === nextPlayerId);
-  const prevPlayer = players.find(p => p.id === prevPlayerId);
   
-  if (!nextPlayer || !prevPlayer) return;
+  if (!nextPlayer) return;
 
+  const foulPoints = Number(config.scoreSettings.foul);
+  const isPrevOnly = config.foulScope === 'prev';
+  
   fouler.stats.foul++;
   resetPlayerStreak(foulerId);
-  fouler.score = Number(fouler.score) - 1;
-  prevPlayer.score = Number(prevPlayer.score) + 1;
+  fouler.score = Number(fouler.score) - foulPoints;
+  
+  let targetDescription = '';
+  
+  if (isPrevOnly) {
+    const prevPlayerId = getPrevPlayer(foulerId);
+    const prevPlayer = players.find(p => p.id === prevPlayerId);
+    if (prevPlayer) {
+      prevPlayer.score = Number(prevPlayer.score) + foulPoints;
+      targetDescription = `${prevPlayer.name}+${foulPoints}分`;
+    }
+  } else {
+    players.forEach(player => {
+      if (player.id !== foulerId) {
+        player.score = Number(player.score) + foulPoints;
+      }
+    });
+    const otherNames = players.filter(p => p.id !== foulerId).map(p => p.name).join('、');
+    targetDescription = `${otherNames}+${foulPoints}分`;
+  }
   
   addRecord({
     type: 'foul',
     playerId: foulerId,
-    targetPlayerId: prevPlayerId,
-    points: 1,
-    description: `${fouler.name} 犯规 → ${fouler.name}-1分，${prevPlayer.name}+1分，${nextPlayer.name}获得自由球`
+    points: foulPoints,
+    description: `${fouler.name} 犯规 → ${fouler.name}-${foulPoints}分，${targetDescription}，${nextPlayer.name}获得自由球`
   });
   
   savePlayers(players);

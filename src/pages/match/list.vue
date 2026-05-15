@@ -100,15 +100,15 @@
         </view>
       </view>
     </scroll-view>
-    
-    <view class="banner-ad">
-      <text class="ad-text">广告位</text>
-    </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+
+onMounted(() => {
+  uni.redirectTo({ url: '/pages/coming-soon/index?type=match' })
+})
 
 interface Match {
   id: string

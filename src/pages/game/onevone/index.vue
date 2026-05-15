@@ -81,19 +81,13 @@
         </view>
       </view>
     </view>
-    
-    <view class="banners-section">
-      <view class="banner-ad">
-        <text class="ad-text">广告位</text>
-      </view>
-    </view>
   </view>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import ScoreBoard from '@/components/ScoreBoard.vue'
-import { isMember, incrementZhaQing, incrementJieQing } from '@/utils/auth'
+import { incrementZhaQing, incrementJieQing } from '@/utils/auth'
 
 const gameType = ref('中式八球')
 const gameMode = ref('simple')
@@ -111,7 +105,6 @@ const elapsedTime = ref(0)
 const player1Wins = ref(0)
 const player2Wins = ref(0)
 
-const isMemberValue = ref(false)
 const player1ZhaQing = ref(0)
 const player1JieQing = ref(0)
 const player2ZhaQing = ref(0)
@@ -151,8 +144,6 @@ onMounted(() => {
     showTimer.value = true
     startElapsedTimer()
   }
-  
-  isMemberValue.value = isMember()
   
   uni.showModal({
     title: '开始对局',
@@ -389,14 +380,6 @@ function checkMatchWin() {
 }
 
 function markGolden() {
-  if (!isMemberValue.value) {
-    uni.showModal({
-      title: '会员专属',
-      content: '大金标记为会员专属功能',
-      showCancel: false
-    })
-    return
-  }
   if (currentPlayer.value === 0) {
     score1.value += 10
   } else {
@@ -408,14 +391,6 @@ function markGolden() {
 }
 
 function markSmallGolden() {
-  if (!isMemberValue.value) {
-    uni.showModal({
-      title: '会员专属',
-      content: '小金标记为会员专属功能',
-      showCancel: false
-    })
-    return
-  }
   if (currentPlayer.value === 0) {
     score1.value += 7
   } else {

@@ -8,10 +8,12 @@ export interface MatchConfig {
     smallGolden: number;
     bigGolden: number;
     goldenNine: number;
+    foul: number;
   };
   smallGoldenScope: 'all' | 'prev';  // 小金计分范围：'all'全场扣分，'prev'仅上家扣分
   bigGoldenScope: 'all' | 'prev';     // 大金计分范围：'all'全场扣分，'prev'仅上家扣分
   goldenNineScope: 'all' | 'prev';    // 黄金九计分范围：'all'全场扣分，'prev'仅上家扣分
+  foulScope: 'all' | 'prev';          // 犯规计分范围：'all'全场扣分，'prev'仅上家扣分
   chainEnabled: boolean;
   chainSettings: {
     requiredStreak: number;
@@ -70,15 +72,17 @@ export const DEFAULT_CONFIG: MatchConfig = {
     normalWin: 4,
     smallGolden: 7,
     bigGolden: 10,
-    goldenNine: 4
+    goldenNine: 4,
+    foul: 1
   },
   smallGoldenScope: 'prev',
   bigGoldenScope: 'all',
   goldenNineScope: 'all',
+  foulScope: 'prev',
   chainEnabled: false,
   chainSettings: {
-    requiredStreak: 3,
-    bonusPoints: 2
+    requiredStreak: 5,
+    bonusPoints: 4
   },
   multiplierEnabled: false,
   multiplier: 2,

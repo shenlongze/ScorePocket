@@ -137,6 +137,25 @@
           />
           <text class="item-unit">分</text>
         </view>
+        <view class="config-item">
+          <text class="item-label">犯规</text>
+          <view class="radio-group">
+            <view 
+              :class="['radio-btn', { active: config.foulScope === 'prev' }]"
+              @tap="config.foulScope = 'prev'"
+            >上家</view>
+            <view 
+              :class="['radio-btn', { active: config.foulScope === 'all' }]"
+              @tap="config.foulScope = 'all'"
+            >全场</view>
+          </view>
+          <input 
+            type="number" 
+            class="value-input" 
+            v-model="config.scoreSettings.foul"
+          />
+          <text class="item-unit">分</text>
+        </view>
       </view>
 
       <view class="config-section">

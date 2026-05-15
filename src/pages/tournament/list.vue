@@ -52,16 +52,16 @@
         </view>
       </view>
     </view>
-    
-    <view class="banner-ad">
-      <text class="ad-text">广告位</text>
-    </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import type { Tournament } from '@/utils/tournamentLogic'
+
+onMounted(() => {
+  uni.redirectTo({ url: '/pages/coming-soon/index?type=tournament' })
+})
 
 const tournaments = ref<Tournament[]>([
   {

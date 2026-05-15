@@ -9,7 +9,6 @@
       </view>
       <view class="header-actions">
         <view class="action-btn" @tap="undoLastAction">撤销</view>
-        <view class="action-btn" @tap="viewRecords">记录</view>
         <view class="action-btn" @tap="resetGame">重置</view>
       </view>
     </view>
@@ -20,6 +19,7 @@
         :key="player.id"
         :class="['player-card', { active: currentPlayerId === player.id }]"
         :style="{ '--player-color': PLAYER_COLORS[player.id - 1] }"
+        @tap="switchToPlayer(player.id)"
       >
         <view class="player-header" :style="{ background: PLAYER_COLORS[player.id - 1] }">
           <view class="order-indicator">第{{ playOrder.indexOf(player.id) + 1 }}位</view>
@@ -58,41 +58,53 @@
       </view>
     </view>
 
-    <view class="timer-area">
-      <view class="timer-display">
-        <text class="timer-value">{{ formattedTime }}</text>
-        <text class="timer-label">{{ timerLabel }}</text>
+    <view class="operation-records-section">
+      <view class="records-header">
+        <view class="records-title">操作记录</view>
+        <view class="records-more-btn" @tap="showFullRecords">
+          <text>更多</text>
+        </view>
       </view>
-      <view class="round-display">
-        <text class="round-value">{{ roundText }}</text>
-      </view>
-      <view v-if="!isTimerRunning" class="timer-btn" @tap="startTimer">
-        开始计时
-      </view>
-      <view v-else class="timer-btn stop-btn" @tap="stopTimer">
-        停止计时
-      </view>
+      <scroll-view class="records-list" scroll-y>
+        <view 
+          v-for="record in operationRecords" 
+          :key="record.id" 
+          class="record-item"
+          :class="record.action"
+        >
+          <text class="record-time">{{ record.time }}</text>
+          <text class="record-desc">{{ record.description }}</text>
+        </view>
+        <view v-if="operationRecords.length === 0" class="empty-records">
+          <text>暂无操作记录</text>
+        </view>
+      </scroll-view>
     </view>
 
-    <view class="play-order-section">
-      <text class="order-label">击球顺序：</text>
-      <view class="order-list">
-        <view 
-          v-for="(playerId, index) in playOrder" 
-          :key="playerId"
-          :class="['order-item', { active: currentPlayerId === playerId }]"
-        >
-          <text class="order-player">{{ getPlayerName(playerId) }}</text>
-          <text v-if="index < playOrder.length - 1" class="order-arrow">→</text>
+    <view class="bottom-info-section">
+      <view class="timer-row">
+        <text class="timer-value">{{ formattedTime }}</text>
+        <text class="round-value">已完成局数: {{ completedRounds }}</text>
+        <view class="timer-btn" :class="{ active: isTimerRunning }" @tap="toggleTimer">
+          {{ isTimerRunning ? '暂停计时' : '开始计时' }}
+        </view>
+      </view>
+      <view class="play-order-row">
+        <text class="order-label">击球顺序：</text>
+        <view class="order-list">
+          <view 
+            v-for="(playerId, index) in playOrder" 
+            :key="playerId"
+            :class="['order-item', { active: currentPlayerId === playerId }]"
+          >
+            <text class="order-player">{{ getPlayerName(playerId) }}</text>
+            <text v-if="index < playOrder.length - 1" class="order-arrow">→</text>
+          </view>
         </view>
       </view>
     </view>
 
     <view class="controls-section">
-      <view class="control-btn switch-player-btn" @tap="switchPlayer">
-        <text class="btn-icon">🔄</text>
-        <text class="btn-text">换选手</text>
-      </view>
       <view class="control-btn" @tap="handleFoul">
         <text class="btn-icon">⛔</text>
         <text class="btn-text">犯规</text>
@@ -128,6 +140,31 @@
       >
         <text class="btn-icon">🎁</text>
         <text class="btn-text">半彩</text>
+      </view>
+    </view>
+
+    <view v-if="showRecordsModal" class="modal-overlay" @tap="closeRecordsModal">
+      <view class="records-modal" @tap.stop>
+        <view class="records-modal-header">
+          <text class="records-modal-title">操作记录</text>
+          <view class="records-modal-close" @tap="closeRecordsModal">
+            <text>✕</text>
+          </view>
+        </view>
+        <scroll-view class="records-modal-list" scroll-y>
+          <view 
+            v-for="record in operationRecords" 
+            :key="record.id" 
+            class="record-item"
+            :class="record.action"
+          >
+            <text class="record-time">{{ record.time }}</text>
+            <text class="record-desc">{{ record.description }}</text>
+          </view>
+          <view v-if="operationRecords.length === 0" class="empty-records">
+            <text>暂无操作记录</text>
+          </view>
+        </scroll-view>
       </view>
     </view>
   </view>
@@ -167,6 +204,39 @@ const playOrder = computed(() => {
   playOrderTrigger.value;
   return getPlayOrder();
 });
+
+interface OperationRecord {
+  id: number;
+  time: string;
+  action: 'foul' | 'win' | 'golden' | 'switch' | 'bonus' | 'undo' | 'reset';
+  description: string;
+}
+
+const operationRecords = ref<OperationRecord[]>([]);
+let recordId = 0;
+const showRecordsModal = ref(false);
+
+function addOperationRecord(action: OperationRecord['action'], description: string) {
+  const now = new Date();
+  const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+  operationRecords.value.unshift({
+    id: ++recordId,
+    time: timeStr,
+    action,
+    description
+  });
+  if (operationRecords.value.length > 100) {
+    operationRecords.value.pop();
+  }
+}
+
+function showFullRecords() {
+  showRecordsModal.value = true;
+}
+
+function closeRecordsModal() {
+  showRecordsModal.value = false;
+}
 
 const formattedTime = computed(() => {
   const seconds = timerSeconds.value;
@@ -217,14 +287,12 @@ onMounted(() => {
       completedRounds.value = state.completedRounds || 0;
       timerSeconds.value = state.timerSeconds || 0;
       isCountdown.value = state.isCountdown || false;
-      isTimerRunning.value = state.isTimerRunning || false;
-      if (isTimerRunning.value) {
-        startTimer();
-      }
     } catch {
       // ignore
     }
   }
+  isTimerRunning.value = false;
+  startTimer();
 });
 
 onUnmounted(() => {
@@ -257,6 +325,14 @@ function resetGame() {
       }
     }
   });
+}
+
+function toggleTimer() {
+  if (isTimerRunning.value) {
+    stopTimer();
+  } else {
+    startTimer();
+  }
 }
 
 function startTimer() {
@@ -334,27 +410,35 @@ function undoLastAction() {
 
 function handleFoul() {
   saveHistoryState();
+  const currentPlayer = players.value.find(p => p.id === currentPlayerId.value);
   gameHandleFoul(currentPlayerId.value);
   players.value = loadPlayers();
-  currentPlayerId.value = getNextPlayer(currentPlayerId.value);
+  const nextPlayerId = getNextPlayer(currentPlayerId.value);
+  const nextPlayer = players.value.find(p => p.id === nextPlayerId);
+  currentPlayerId.value = nextPlayerId;
   isGoldenEnabled.value = false;  // 犯规后禁用大金/黄金九
+  // 操作记录已经在 gameLogic.ts 中通过 addRecord 添加了
   uni.showToast({ title: '已记录犯规', icon: 'none' });
   saveGameState();
 }
 
-function switchPlayer() {
-  const nextPlayerId = getNextPlayer(currentPlayerId.value);
-  const nextPlayer = players.value.find(p => p.id === nextPlayerId);
-  currentPlayerId.value = nextPlayerId;
+function switchToPlayer(playerId: number) {
+  const player = players.value.find(p => p.id === playerId);
+  if (!player) return;
+  const prevPlayer = players.value.find(p => p.id === currentPlayerId.value);
+  currentPlayerId.value = playerId;
   isGoldenEnabled.value = false;  // 换选手后禁用大金/黄金九
+  addOperationRecord('switch', `切换选手：${prevPlayer?.name || '未知'} → ${player.name}`);
   saveGameState();
-  uni.showToast({ title: `切换到 ${nextPlayer?.name}`, icon: 'none' });
+  uni.showToast({ title: `切换到 ${player.name}`, icon: 'none' });
 }
 
 function handleBonusClick() {
   saveHistoryState();
+  const currentPlayer = players.value.find(p => p.id === currentPlayerId.value);
   handleBonus(currentPlayerId.value);
   players.value = loadPlayers();
+  addOperationRecord('bonus', `${currentPlayer?.name || '未知'} 半彩加分`);
   uni.showToast({ title: '半彩加分', icon: 'none' });
   saveGameState();
 }
@@ -391,14 +475,31 @@ function handleWin(scoreType: 'normalWin' | 'bigGolden' | 'smallGolden' | 'golde
   const scoreValue = config.value.scoreSettings[scoreType];
   const multipliedScore = scoreValue * (config.value.multiplierEnabled ? config.value.multiplier : 1);
   
-  const otherScoreText = otherPlayers.map(p => `${p.name}:-${multipliedScore}分`).join(' ');
+  let otherScoreText = '';
+  const isPrevOnly = scoreType === 'normalWin' || scoreType === 'smallGolden';
+  
+  if (isPrevOnly && otherPlayers.length > 0) {
+    const prevPlayerId = getPrevPlayer(currentPlayerId.value);
+    const prevPlayer = players.value.find(p => p.id === prevPlayerId);
+    if (prevPlayer) {
+      otherScoreText = `${prevPlayer.name}:-${multipliedScore}分`;
+    }
+  } else {
+    otherScoreText = otherPlayers.map(p => `${p.name}:-${multipliedScore}分`).join(' ');
+  }
   
   addRecord({
     type: scoreType,
     playerId: currentPlayerId.value,
     points: multipliedScore,
-    description: `${player.name} ${label}，得${multipliedScore}分。${otherScoreText}`
+    description: `${player.name} ${label}，+${multipliedScore}分。${otherScoreText}`
   });
+  
+  const operationDesc = otherScoreText 
+    ? `${player.name} ${label}，+${multipliedScore}分，${otherScoreText}`
+    : `${player.name} ${label}，+${multipliedScore}分`;
+  const actionType = scoreType === 'normalWin' ? 'win' : 'golden';
+  addOperationRecord(actionType, operationDesc);
   
   updatePlayOrder(currentPlayerId.value);
   playOrderTrigger.value++;
@@ -563,68 +664,49 @@ function handleWin(scoreType: 'normalWin' | 'bigGolden' | 'smallGolden' | 'golde
   font-size: 20rpx;
 }
 
-.timer-area {
+.bottom-info-section {
   position: fixed;
-  right: 20rpx;
-  bottom: 240rpx;
-  background: rgba(0, 0, 0, 0.8);
-  border-radius: 12rpx;
-  padding: 15rpx 20rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 5rpx;
+  left: 0;
+  right: 0;
+  bottom: 160rpx;
+  background: rgba(26, 26, 46, 0.7);
+  border-top: 1rpx solid rgba(255, 255, 255, 0.1);
+  z-index: 80;
 }
 
-.timer-display {
+.timer-row {
   display: flex;
-  align-items: baseline;
-  gap: 10rpx;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15rpx 30rpx;
+  border-bottom: 1rpx solid rgba(255, 255, 255, 0.05);
 }
 
 .timer-value {
   color: #ff8c00;
-  font-size: 36rpx;
+  font-size: 38rpx;
   font-weight: bold;
   font-family: monospace;
 }
 
-.timer-label {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 22rpx;
-}
-
-.round-display {
-  margin-top: 5rpx;
-}
-
 .round-value {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 26rpx;
 }
 
 .timer-btn {
-  margin-top: 10rpx;
-  padding: 10rpx 20rpx;
-  background: #ff8c00;
+  padding: 12rpx 25rpx;
+  background: #dc3545;
   border-radius: 8rpx;
   color: #fff;
-  font-size: 22rpx;
+  font-size: 24rpx;
+  font-weight: bold;
 }
 
-.timer-btn.stop-btn {
-  background: #dc3545;
-}
-
-.play-order-section {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 140rpx;
-  padding: 15rpx 20rpx;
-  background: rgba(26, 26, 46, 0.95);
-  border-top: 1rpx solid rgba(255, 255, 255, 0.1);
-  z-index: 90;
+.play-order-row {
+  display: flex;
+  align-items: center;
+  padding: 15rpx 30rpx;
 }
 
 .order-label {
@@ -672,7 +754,7 @@ function handleWin(scoreType: 'normalWin' | 'bigGolden' | 'smallGolden' | 'golde
   right: 0;
   display: flex;
   background: #1a1a2e;
-  padding: 20rpx;
+  padding: 20rpx 15rpx;
   gap: 10rpx;
   padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
 }
@@ -682,10 +764,11 @@ function handleWin(scoreType: 'normalWin' | 'bigGolden' | 'smallGolden' | 'golde
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10rpx;
+  gap: 8rpx;
   padding: 20rpx 10rpx;
   background: #228b22;
   border-radius: 12rpx;
+  min-height: 100rpx;
 }
 
 .btn-icon {
@@ -696,6 +779,7 @@ function handleWin(scoreType: 'normalWin' | 'bigGolden' | 'smallGolden' | 'golde
   color: #fff;
   font-size: 24rpx;
   font-weight: bold;
+  white-space: nowrap;
 }
 
 .control-btn.disabled {
@@ -704,7 +788,140 @@ function handleWin(scoreType: 'normalWin' | 'bigGolden' | 'smallGolden' | 'golde
   pointer-events: none;
 }
 
-.control-btn.switch-player-btn {
-  background: #1e90ff;
+.operation-records-section {
+  padding: 15rpx 20rpx;
+  background: rgba(26, 26, 46, 0.95);
+  border-radius: 12rpx;
+  margin: 15rpx 20rpx;
+  margin-bottom: 280rpx;
+  border: 1rpx solid rgba(255, 140, 0, 0.2);
+}
+
+.records-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+  padding-bottom: 8rpx;
+  border-bottom: 1rpx solid rgba(255, 255, 255, 0.1);
+}
+
+.records-title {
+  color: #ff8c00;
+  font-size: 26rpx;
+  font-weight: bold;
+}
+
+.records-more-btn {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 24rpx;
+  padding: 8rpx 16rpx;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20rpx;
+}
+
+.records-list {
+  max-height: 200rpx;
+}
+
+.record-item {
+  display: flex;
+  gap: 15rpx;
+  padding: 10rpx 0;
+  border-bottom: 1rpx solid rgba(255, 255, 255, 0.05);
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.record-time {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 22rpx;
+  font-family: monospace;
+  flex-shrink: 0;
+}
+
+.record-desc {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 24rpx;
+  flex: 1;
+}
+
+.record-item.foul .record-desc {
+  color: #ff6b6b;
+}
+
+.record-item.win .record-desc {
+  color: #4ecdc4;
+}
+
+.record-item.golden .record-desc {
+  color: #ffd93d;
+}
+
+.record-item.switch .record-desc {
+  color: #4a9eff;
+}
+
+.record-item.bonus .record-desc {
+  color: #ffd93d;
+}
+
+.empty-records {
+  text-align: center;
+  padding: 20rpx;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 24rpx;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.records-modal {
+  width: 90%;
+  max-height: 70vh;
+  background: #1a1a2e;
+  border-radius: 20rpx;
+  overflow: hidden;
+}
+
+.records-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25rpx 30rpx;
+  border-bottom: 1rpx solid rgba(255, 255, 255, 0.1);
+}
+
+.records-modal-title {
+  color: #ff8c00;
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+.records-modal-close {
+  width: 50rpx;
+  height: 50rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 32rpx;
+}
+
+.records-modal-list {
+  max-height: 60vh;
+  padding: 15rpx 30rpx 30rpx;
 }
 </style>
