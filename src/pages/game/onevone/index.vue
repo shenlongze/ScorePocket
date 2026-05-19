@@ -36,21 +36,8 @@
     </view>
     
     <ScoreBoard
-      :player1="player1"
-      :player2="player2"
-      :score1="score1"
-      :score2="score2"
-      :currentPlayer="currentPlayer"
-      :gameType="gameType"
-      :player1ZhaQing="player1ZhaQing"
-      :player1JieQing="player1JieQing"
-      :player2ZhaQing="player2ZhaQing"
-      :player2JieQing="player2JieQing"
-      @switch-player="handleSwitchPlayer"
-      @add-score="handleAddScore"
-      @subtract-score="handleSubtractScore"
-      @mark-zha-qing="handleMarkZhaQing"
-      @mark-jie-qing="handleMarkJieQing"
+      :players="players"
+      :currentPlayerId="currentPlayer + 1"
     />
     
     <view class="controls-section" v-if="gameType !== '中式八球'">
@@ -88,6 +75,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import ScoreBoard from '@/components/ScoreBoard.vue'
 import { incrementZhaQing, incrementJieQing } from '@/utils/auth'
+import type { Player } from '@/data/types'
 
 const gameType = ref('中式八球')
 const gameMode = ref('simple')
@@ -109,6 +97,37 @@ const player1ZhaQing = ref(0)
 const player1JieQing = ref(0)
 const player2ZhaQing = ref(0)
 const player2JieQing = ref(0)
+
+const players = computed<Player[]>(() => [
+  {
+    id: 1,
+    name: player1.value.name,
+    score: score1.value,
+    stats: {
+      foul: 0,
+      bonus: 0,
+      normalWin: player1ZhaQing.value,
+      bigGolden: 0,
+      smallGolden: player1JieQing.value,
+      goldenNine: 0
+    },
+    currentStreak: 0
+  },
+  {
+    id: 2,
+    name: player2.value.name,
+    score: score2.value,
+    stats: {
+      foul: 0,
+      bonus: 0,
+      normalWin: player2ZhaQing.value,
+      bigGolden: 0,
+      smallGolden: player2JieQing.value,
+      goldenNine: 0
+    },
+    currentStreak: 0
+  }
+])
 
 let timerInterval: number | null = null
 
@@ -447,7 +466,12 @@ function formatTime(seconds: number): string {
 .game-page {
   min-height: 100vh;
   background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+  /* #ifdef MP-WEIXIN */
+  padding-bottom: calc(220rpx + env(safe-area-inset-bottom));
+  /* #endif */
+  /* #ifndef MP-WEIXIN */
   padding-bottom: 120rpx;
+  /* #endif */
 }
 
 .game-header {

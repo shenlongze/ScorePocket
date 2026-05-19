@@ -1034,7 +1034,12 @@ function endMatch() {
 .scoreboard-page {
   min-height: 100vh;
   background: #000;
+  /* #ifdef MP-WEIXIN */
+  padding-bottom: calc(300rpx + env(safe-area-inset-bottom));
+  /* #endif */
+  /* #ifndef MP-WEIXIN */
   padding-bottom: 200rpx;
+  /* #endif */
 }
 
 .page-header {

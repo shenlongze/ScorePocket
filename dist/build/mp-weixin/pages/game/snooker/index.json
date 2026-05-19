@@ -1,6 +1,0 @@
-{
-  "navigationBarTitleText": "斯诺克",
-  "usingComponents": {
-    "score-board": "../../../components/ScoreBoard"
-  }
-}

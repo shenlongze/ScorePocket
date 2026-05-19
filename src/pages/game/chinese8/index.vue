@@ -540,6 +540,21 @@ function handleSettle() {
 }
 
 function settleRound() {
+  let winner = -1
+  
+  if (score1.value > score2.value) {
+    player1Wins.value++
+    winner = 0
+    uni.showToast({ title: `${player1.value.name} 赢得本局`, icon: 'none' })
+  } else if (score2.value > score1.value) {
+    player2Wins.value++
+    winner = 1
+    uni.showToast({ title: `${player2.value.name} 赢得本局`, icon: 'none' })
+  } else {
+    winner = -1
+    uni.showToast({ title: '本局平局', icon: 'none' })
+  }
+  
   const roundResult = {
     player1Score: score1.value,
     player2Score: score2.value,
@@ -547,20 +562,8 @@ function settleRound() {
     player1JieQing: player1JieQing.value,
     player2ZhaQing: player2ZhaQing.value,
     player2JieQing: player2JieQing.value,
-    roundTime: elapsedTime.value - lastRoundStartTime.value
-  }
-  
-  if (score1.value > score2.value) {
-    player1Wins.value++
-    roundResult['winner'] = 0
-    uni.showToast({ title: `${player1.value.name} 赢得本局`, icon: 'none' })
-  } else if (score2.value > score1.value) {
-    player2Wins.value++
-    roundResult['winner'] = 1
-    uni.showToast({ title: `${player2.value.name} 赢得本局`, icon: 'none' })
-  } else {
-    roundResult['winner'] = -1
-    uni.showToast({ title: '本局平局', icon: 'none' })
+    roundTime: elapsedTime.value - lastRoundStartTime.value,
+    winner: winner
   }
   
   roundHistory.value.push(roundResult)
@@ -1020,7 +1023,12 @@ function formatTime(seconds: number): string {
 .game-page {
   min-height: 100vh;
   background: #000;
+  /* #ifdef MP-WEIXIN */
+  padding-bottom: calc(220rpx + env(safe-area-inset-bottom));
+  /* #endif */
+  /* #ifndef MP-WEIXIN */
   padding-bottom: 220rpx;
+  /* #endif */
 }
 
 .main-content {

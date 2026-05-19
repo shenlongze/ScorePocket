@@ -121,7 +121,6 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { isMember } from '@/utils/auth'
 import { assignBalls } from '@/utils/gameLogic'
 
 interface Player {
@@ -301,7 +300,12 @@ function goBack() {
 .zambo-page {
   min-height: 100vh;
   background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+  /* #ifdef MP-WEIXIN */
+  padding-bottom: calc(220rpx + env(safe-area-inset-bottom));
+  /* #endif */
+  /* #ifndef MP-WEIXIN */
   padding-bottom: 120rpx;
+  /* #endif */
 }
 
 .game-header {

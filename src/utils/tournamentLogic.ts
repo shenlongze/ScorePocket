@@ -25,6 +25,7 @@ export interface Tournament {
   matches: Match[]
   winner: Player | null
   status: 'pending' | 'ongoing' | 'finished'
+  rounds: number
 }
 
 export function shuffleArray<T>(array: T[]): T[] {

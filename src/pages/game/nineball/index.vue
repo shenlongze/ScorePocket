@@ -518,7 +518,12 @@ function handleWin(scoreType: 'normalWin' | 'bigGolden' | 'smallGolden' | 'golde
 .scoreboard-page {
   min-height: 100vh;
   background: #000;
+  /* #ifdef MP-WEIXIN */
+  padding-bottom: calc(320rpx + env(safe-area-inset-bottom, 0rpx));
+  /* #endif */
+  /* #ifndef MP-WEIXIN */
   padding-bottom: 220rpx;
+  /* #endif */
 }
 
 .page-header {
@@ -668,7 +673,12 @@ function handleWin(scoreType: 'normalWin' | 'bigGolden' | 'smallGolden' | 'golde
   position: fixed;
   left: 0;
   right: 0;
+  /* #ifdef MP-WEIXIN */
+  bottom: calc(180rpx + env(safe-area-inset-bottom, 0rpx));
+  /* #endif */
+  /* #ifndef MP-WEIXIN */
   bottom: 160rpx;
+  /* #endif */
   background: rgba(26, 26, 46, 0.7);
   border-top: 1rpx solid rgba(255, 255, 255, 0.1);
   z-index: 80;
