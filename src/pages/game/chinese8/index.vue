@@ -978,9 +978,10 @@ function resetHideTimer() {
 .layout-landscape {
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
-  padding: 8rpx 12rpx;
-  min-height: 100vh;
+  gap: 0;
+  padding: 10rpx;
+  height: 100vh;
+  overflow: hidden;
   box-sizing: border-box;
 }
 
@@ -988,9 +989,10 @@ function resetHideTimer() {
   display: flex;
   flex-direction: row;
   align-items: stretch;
-  gap: 8rpx;
+  gap: 10rpx;
   flex: 1;
   min-height: 0;
+  max-height: calc(100vh - 140rpx);
 }
 
 .landscape-player-card {
