@@ -1,213 +1,225 @@
 <template>
-  <view class="game-page">
-    <view class="game-header" v-if="!isLandscape">
-      <view class="back-btn" @tap="goBack">
-        <text>‹</text>
-      </view>
-      <text class="game-title">中式八球</text>
-      <view class="header-actions">
-        <view class="action-btn" @tap="undoAction">撤销</view>
-        <view class="action-btn" @tap="resetGame">重置</view>
-      </view>
-    </view>
-    
-    <view class="timer-section" v-if="gameMode === 'timed' && showTimer">
-      <view class="timer-display">
-        <text class="timer-label">剩余时间</text>
-        <text class="timer-value" :class="{ warning: remainingTime <= 300 }">{{ formatTime(remainingTime) }}</text>
-      </view>
-      <view class="timer-progress">
-        <view class="progress-bar" :style="{ width: timerProgress + '%' }"></view>
-      </view>
-    </view>
-    
-    <view class="main-content">
-      <view class="info-section" v-if="(gameMode === 'simple' || gameMode === 'rounds') && showTimer && !isLandscape">
-        <view class="info-content">
-          <text class="rounds-label" v-if="gameMode === 'rounds'">{{ winRounds * 2 - 1 }}局{{ winRounds }}胜制</text>
-          <text class="info-divider" v-if="gameMode === 'rounds'">|</text>
-          <text class="timer-label">比赛用时</text>
-          <text class="timer-value">{{ formatTime(elapsedTime) }}</text>
+  <view class="chinese8-container">
+    <view class="game-page" @tap="toggleActions">
+      <view class="game-header" :class="{ show: showHeader }">
+        <view class="back-btn" @tap.stop="goBack">
+          <text>‹</text>
         </view>
-      </view>
-      
-      <view class="layout-portrait" v-if="!isLandscape">
-        <view class="portrait-card" :class="{ active: currentPlayer === 0 }" @tap="switchToPlayer(0)">
-          <view class="portrait-header portrait-header-player1">
-            <view class="portrait-order-indicator">第{{ score1 > score2 ? 1 : score2 > score1 ? 2 : 1 }}位</view>
-            <text class="portrait-player-name">{{ player1.name }}</text>
-            <view v-if="currentPlayer === 0" class="portrait-current-indicator">当前</view>
-          </view>
-          <view class="portrait-score-area">
-            <view class="portrait-score">{{ score1 }}</view>
-          </view>
-          <view class="portrait-stats-row">
-            <view class="portrait-stat-item">
-              <text class="stat-num">{{ player1ZhaQing }}</text>
-              <text class="stat-label">炸清</text>
-            </view>
-            <view class="portrait-stat-item">
-              <text class="stat-num">{{ player1JieQing }}</text>
-              <text class="stat-label">接清</text>
-            </view>
-          </view>
-        </view>
-        
-        <view class="portrait-vs">
-          <text>VS</text>
-        </view>
-        
-        <view class="portrait-card" :class="{ active: currentPlayer === 1 }" @tap="switchToPlayer(1)">
-          <view class="portrait-header portrait-header-player2">
-            <view class="portrait-order-indicator">第{{ score2 > score1 ? 1 : score1 > score2 ? 2 : 2 }}位</view>
-            <text class="portrait-player-name">{{ player2.name }}</text>
-            <view v-if="currentPlayer === 1" class="portrait-current-indicator">当前</view>
-          </view>
-          <view class="portrait-score-area">
-            <view class="portrait-score">{{ score2 }}</view>
-          </view>
-          <view class="portrait-stats-row">
-            <view class="portrait-stat-item">
-              <text class="stat-num">{{ player2ZhaQing }}</text>
-              <text class="stat-label">炸清</text>
-            </view>
-            <view class="portrait-stat-item">
-              <text class="stat-num">{{ player2JieQing }}</text>
-              <text class="stat-label">接清</text>
-            </view>
-          </view>
-        </view>
-      </view>
-      
-      <view class="operation-records-section" v-if="!isLandscape">
-        <view class="records-header">
-          <view class="records-title">操作记录</view>
-          <view class="records-more-btn" @tap="showFullRecords">
-            <text>更多</text>
-          </view>
-        </view>
-        <scroll-view class="records-list" scroll-y>
-          <view 
-            v-for="record in operationRecords" 
-            :key="record.id" 
-            class="record-item"
-            :class="record.action"
+        <text class="game-title">中式八球</text>
+        <view class="header-actions">
+          <view
+            class="action-btn"
+            @tap.stop="
+              undoAction;
+              showActions = true;
+              showHeader = true;
+              resetHideTimer;
+            "
+            >撤销</view
           >
-            <text class="record-time">{{ record.time }}</text>
-            <text class="record-desc">{{ record.description }}</text>
-          </view>
-          <view v-if="operationRecords.length === 0" class="empty-records">
-            <text>暂无操作记录</text>
-          </view>
-        </scroll-view>
+          <view
+            class="action-btn"
+            @tap.stop="
+              resetGame;
+              showActions = true;
+              showHeader = true;
+              resetHideTimer;
+            "
+            >重置</view
+          >
+        </view>
       </view>
 
-      <view class="bottom-actions" v-if="!isLandscape">
-        <view class="action-btn-wrap">
-          <view class="bottom-btn switch-btn" @tap="switchToPlayer(currentPlayer === 0 ? 1 : 0)">
-            <text>换选手</text>
-          </view>
-          <view class="bottom-btn plus-btn" @tap="handleAddScore(currentPlayer)">
-            <text>加分</text>
-          </view>
-          <view class="bottom-btn minus-btn" @tap="handleSubtractScore(currentPlayer)">
-            <text>减分</text>
-          </view>
-          <view class="bottom-btn zhaqing-btn" @tap="handleAddZhaQing(currentPlayer)">
-            <text>炸清</text>
-          </view>
-          <view class="bottom-btn jieqing-btn" @tap="handleAddJieQing(currentPlayer)">
-            <text>接清</text>
-          </view>
-          <view class="bottom-btn undo-btn" @tap="undoAction">
-            <text>撤回</text>
-          </view>
-          <view class="bottom-btn settle-btn" @tap="handleSettle">
-            <text>结算</text>
-          </view>
+      <view
+        class="timer-section"
+        v-if="gameMode === 'timed' && showTimer"
+        :class="{ 'header-shown': showHeader }"
+      >
+        <view class="timer-display">
+          <text class="timer-label">剩余时间</text>
+          <text class="timer-value" :class="{ warning: remainingTime <= 300 }">{{
+            formatTime(remainingTime)
+          }}</text>
+        </view>
+        <view class="timer-progress">
+          <view class="progress-bar" :style="{ width: timerProgress + '%' }"></view>
         </view>
       </view>
-      
-      <view class="layout-landscape" v-else>
-        <view class="landscape-top">
-          <view class="landscape-actions-left">
-            <view class="landscape-btn minus" @tap.stop="handleSubtractScore(0)">-</view>
-            <view class="landscape-btn plus" @tap.stop="handleAddScore(0)">+</view>
-          </view>
-          
-          <view class="landscape-player-score" :class="{ active: currentPlayer === 0 }">
-            <view class="landscape-score">{{ score1 }}</view>
-          </view>
-          
-          <view class="landscape-center">
-            <text class="landscape-vs">V</text>
-            <text class="landscape-vs">S</text>
-          </view>
-          
-          <view class="landscape-player-score" :class="{ active: currentPlayer === 1 }">
-            <view class="landscape-score">{{ score2 }}</view>
-          </view>
-          
-          <view class="landscape-actions-right">
-            <view class="landscape-btn minus" @tap.stop="handleSubtractScore(1)">-</view>
-            <view class="landscape-btn plus" @tap.stop="handleAddScore(1)">+</view>
+
+      <view class="main-content" :class="{ 'header-shown': showHeader }">
+        <view
+          class="info-section"
+          v-if="(gameMode === 'simple' || gameMode === 'rounds') && showTimer && !isLandscape"
+        >
+          <view class="info-content">
+            <text class="rounds-label" v-if="gameMode === 'rounds'"
+              >{{ winRounds * 2 - 1 }}局{{ winRounds }}胜制</text
+            >
+            <text class="info-divider" v-if="gameMode === 'rounds'">|</text>
+            <text class="timer-label">比赛用时</text>
+            <text class="timer-value">{{ formatTime(elapsedTime) }}</text>
           </view>
         </view>
-        
-        <view class="landscape-bottom">
-          <view class="landscape-player-info">
-            <text class="landscape-name">{{ player1.name }}</text>
-            <text class="landscape-stat">炸清: {{ player1ZhaQing }}</text>
-            <text class="landscape-stat">接清: {{ player1JieQing }}</text>
-          </view>
-          <view class="landscape-divider">|</view>
-          <view class="landscape-player-info">
-            <text class="landscape-name">{{ player2.name }}</text>
-            <text class="landscape-stat">炸清: {{ player2ZhaQing }}</text>
-            <text class="landscape-stat">接清: {{ player2JieQing }}</text>
+
+        <view class="layout-portrait" v-if="!isLandscape">
+          <view
+            v-for="(player, index) in players"
+            :key="player.id"
+            class="portrait-card"
+            :class="{ active: currentPlayer === index }"
+            @tap.stop="switchToPlayer(index)"
+          >
+            <view class="portrait-header" :class="`portrait-header-player${(index % 4) + 1}`">
+              <view class="portrait-order-indicator">第{{ getPlayerRank(index) }}位</view>
+              <text class="portrait-player-name">{{ player.name }}</text>
+            </view>
+            <view class="portrait-score-area">
+              <view class="portrait-score">{{ player.score }}</view>
+            </view>
+            <view class="portrait-stats-row">
+              <view class="portrait-stat-item">
+                <text class="stat-num">{{ player.zhaQing }}</text>
+                <text class="stat-label">炸清</text>
+              </view>
+              <view class="portrait-stat-item">
+                <text class="stat-num">{{ player.jieQing }}</text>
+                <text class="stat-label">接清</text>
+              </view>
+            </view>
           </view>
         </view>
-        
-        <view class="landscape-info-bar" v-if="(gameMode === 'simple' || gameMode === 'rounds') && showTimer">
-          <text class="landscape-rounds" v-if="gameMode === 'rounds'">{{ winRounds * 2 - 1 }}局{{ winRounds }}胜制</text>
-          <text class="landscape-info-divider" v-if="gameMode === 'rounds'">|</text>
-          <text class="landscape-timer-label">比赛用时</text>
-          <text class="landscape-timer-value">{{ formatTime(elapsedTime) }}</text>
-        </view>
-      </view>
-    </view>
-    
-    <view class="records-section" v-if="matchRecords.length > 0">
-      <view class="records-header">
-        <text class="records-title">比赛记录</text>
-      </view>
-      <view class="records-list">
-        <view class="record-summary">
-          <text class="summary-player">{{ player1.name }}</text>
-          <text class="summary-score">{{ totalStats.player1Wins }}</text>
-          <text class="summary-vs">VS</text>
-          <text class="summary-score">{{ totalStats.player2Wins }}</text>
-          <text class="summary-player">{{ player2.name }}</text>
-        </view>
-        <view class="record-divider-line"></view>
-        <view class="record-item" v-for="(record, index) in matchRecords" :key="index">
-          <view class="record-side" :class="{ winner: record.winner === 0 }">
-            <text class="record-player">{{ record.player1Name }}</text>
-            <text class="record-result" v-if="record.winner === 0">胜</text>
-            <text class="record-result" v-else-if="record.winner === 1">负</text>
-            <text class="record-result draw" v-else>平</text>
-            <text class="record-stats">炸清:{{ record.player1ZhaQing }} 接清:{{ record.player1JieQing }}</text>
+
+        <view class="layout-landscape" v-else @tap="toggleActions">
+          <view class="landscape-players-container">
+            <view
+              v-for="(player, index) in players"
+              :key="player.id"
+              class="portrait-card landscape-player-card"
+              :class="{ active: currentPlayer === index }"
+              @tap.stop="switchToPlayer(index)"
+            >
+              <view class="portrait-header" :class="`portrait-header-player${(index % 4) + 1}`">
+                <text class="portrait-player-name">{{ player.name }}</text>
+              </view>
+              <view class="portrait-score-area">
+                <view class="portrait-score">{{ player.score }}</view>
+              </view>
+              <view class="portrait-stats-row">
+                <view class="portrait-stat-item">
+                  <text class="stat-num">{{ player.zhaQing }}</text>
+                  <text class="stat-label">炸清</text>
+                </view>
+                <view class="portrait-stat-item">
+                  <text class="stat-num">{{ player.jieQing }}</text>
+                  <text class="stat-label">接清</text>
+                </view>
+              </view>
+            </view>
           </view>
-          <view class="record-divider">
-            <text class="divider-score">{{ record.player1Score }}:{{ record.player2Score }}</text>
-            <text class="divider-time">{{ record.time }}</text>
+        </view>
+
+        <view class="operation-records-section" v-if="!isLandscape">
+          <view class="records-header">
+            <view class="records-title">操作记录</view>
+            <view
+              class="records-more-btn"
+              @tap.stop="
+                showFullRecords;
+                resetHideTimer;
+              "
+            >
+              <text>更多</text>
+            </view>
           </view>
-          <view class="record-side" :class="{ winner: record.winner === 1 }">
-            <text class="record-stats">炸清:{{ record.player2ZhaQing }} 接清:{{ record.player2JieQing }}</text>
-            <text class="record-result" v-if="record.winner === 1">胜</text>
-            <text class="record-result" v-else-if="record.winner === 0">负</text>
-            <text class="record-result draw" v-else>平</text>
-            <text class="record-player">{{ record.player2Name }}</text>
+          <scroll-view class="records-list" scroll-y>
+            <view
+              v-for="record in operationRecords"
+              :key="record.id"
+              class="record-item"
+              :class="record.action"
+            >
+              <text class="record-time">{{ record.time }}</text>
+              <text class="record-desc">{{ record.description }}</text>
+            </view>
+            <view v-if="operationRecords.length === 0" class="empty-records">
+              <text>暂无操作记录</text>
+            </view>
+          </scroll-view>
+        </view>
+
+        <view class="bottom-actions show" v-if="!isLandscape">
+          <view class="action-btn-wrap">
+            <view class="bottom-btn plus-btn" @tap.stop="handleAddScore(currentPlayer)">
+              <text>加分</text>
+            </view>
+            <view class="bottom-btn minus-btn" @tap.stop="handleSubtractScore(currentPlayer)">
+              <text>减分</text>
+            </view>
+            <view class="bottom-btn zhaqing-btn" @tap.stop="handleAddZhaQing(currentPlayer)">
+              <text>炸清</text>
+            </view>
+            <view class="bottom-btn jieqing-btn" @tap.stop="handleAddJieQing(currentPlayer)">
+              <text>接清</text>
+            </view>
+            <view class="bottom-btn settle-btn" @tap.stop="handleSettle">
+              <text>结算</text>
+            </view>
+          </view>
+        </view>
+
+        <view
+          class="bottom-actions landscape-bottom-actions"
+          :class="{ show: showActions }"
+          v-if="isLandscape"
+        >
+          <view class="action-btn-wrap">
+            <view
+              class="bottom-btn plus-btn"
+              @tap.stop="
+                () => {
+                  handleAddScore(currentPlayer);
+                  resetHideTimer();
+                }
+              "
+            >
+              <text>加分</text>
+            </view>
+            <view
+              class="bottom-btn minus-btn"
+              @tap.stop="
+                () => {
+                  handleSubtractScore(currentPlayer);
+                  resetHideTimer();
+                }
+              "
+            >
+              <text>减分</text>
+            </view>
+            <view
+              class="bottom-btn zhaqing-btn"
+              @tap.stop="
+                () => {
+                  handleAddZhaQing(currentPlayer);
+                  resetHideTimer();
+                }
+              "
+            >
+              <text>炸清</text>
+            </view>
+            <view
+              class="bottom-btn jieqing-btn"
+              @tap.stop="
+                () => {
+                  handleAddJieQing(currentPlayer);
+                  resetHideTimer();
+                }
+              "
+            >
+              <text>接清</text>
+            </view>
+            <view class="bottom-btn settle-btn" @tap.stop="handleSettle">
+              <text>结算</text>
+            </view>
           </view>
         </view>
       </view>
@@ -216,15 +228,15 @@
     <view v-if="showRecordsModal" class="modal-overlay" @tap="closeRecordsModal">
       <view class="records-modal" @tap.stop>
         <view class="records-modal-header">
-          <text class="records-modal-title">操作记录</text>
+          <text class="records-modal-title">完整操作记录</text>
           <view class="records-modal-close" @tap="closeRecordsModal">
             <text>✕</text>
           </view>
         </view>
         <scroll-view class="records-modal-list" scroll-y>
-          <view 
-            v-for="record in operationRecords" 
-            :key="record.id" 
+          <view
+            v-for="record in operationRecords"
+            :key="record.id"
             class="record-item"
             :class="record.action"
           >
@@ -241,58 +253,44 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
-import ScoreBoard from '@/components/ScoreBoard.vue'
-import { incrementZhaQing, incrementJieQing } from '@/utils/auth'
+import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { PLAYER_COLORS } from '@/data/types';
 
-const gameMode = ref('simple')
-const matchTime = ref(60)
-const winRounds = ref(7)
-const isGameEnded = ref(false)
-
-const player1 = ref({ name: '选手1' })
-const player2 = ref({ name: '选手2' })
-const score1 = ref(0)
-const score2 = ref(0)
-const currentPlayer = ref(0)
-const showTimer = ref(false)
-const remainingTime = ref(0)
-const elapsedTime = ref(0)
-const player1Wins = ref(0)
-const player2Wins = ref(0)
-
-const player1ZhaQing = ref(0)
-const player1JieQing = ref(0)
-const player2ZhaQing = ref(0)
-const player2JieQing = ref(0)
-
-const isLandscape = ref(false)
-
-const lastRoundStartTime = ref(0)
-const roundHistory = ref<Array<{
-  player1Score: number
-  player2Score: number
-  player1ZhaQing: number
-  player1JieQing: number
-  player2ZhaQing: number
-  player2JieQing: number
-  roundTime: number
-  winner: number
-}>>([])
-
-interface GameState {
-  score1: number
-  score2: number
-  player1ZhaQing: number
-  player1JieQing: number
-  player2ZhaQing: number
-  player2JieQing: number
-  player1Wins: number
-  player2Wins: number
-  currentPlayer: number
+interface Player {
+  id: number;
+  name: string;
+  score: number;
+  zhaQing: number;
+  jieQing: number;
+  wins: number;
 }
 
-const historyStack = ref<GameState[]>([])
+const gameMode = ref('simple');
+const matchTime = ref(60);
+const winRounds = ref(7);
+const playerCount = ref(2);
+const isGameEnded = ref(false);
+
+const players = ref<Player[]>([]);
+const currentPlayer = ref(0);
+const showTimer = ref(false);
+const remainingTime = ref(0);
+const elapsedTime = ref(0);
+
+const isLandscape = ref(false);
+const showActions = ref(false);
+const showHeader = ref(false);
+let hideTimer: number | null = null;
+
+const lastRoundStartTime = ref(0);
+const roundHistory = ref<any[]>([]);
+
+interface GameState {
+  players: Player[];
+  currentPlayer: number;
+}
+
+const historyStack = ref<GameState[]>([]);
 
 interface OperationRecord {
   id: number;
@@ -312,7 +310,7 @@ function addOperationRecord(action: OperationRecord['action'], description: stri
     id: ++recordId,
     time: timeStr,
     action,
-    description
+    description,
   });
   if (operationRecords.value.length > 100) {
     operationRecords.value.pop();
@@ -327,140 +325,115 @@ function closeRecordsModal() {
   showRecordsModal.value = false;
 }
 
-interface MatchRecord {
-  player1Name: string
-  player2Name: string
-  player1Score: number
-  player2Score: number
-  player1ZhaQing: number
-  player1JieQing: number
-  player2ZhaQing: number
-  player2JieQing: number
-  winner: number
-  time: string
-}
+const matchRecords = ref<any[]>([]);
 
-const matchRecords = ref<MatchRecord[]>([])
-
-const totalStats = computed(() => {
-  let player1Wins = 0
-  let player2Wins = 0
-  let player1TotalZhaQing = 0
-  let player1TotalJieQing = 0
-  let player2TotalZhaQing = 0
-  let player2TotalJieQing = 0
-  
-  matchRecords.value.forEach(record => {
-    if (record.winner === 0) {
-      player1Wins++
-    } else if (record.winner === 1) {
-      player2Wins++
-    }
-    player1TotalZhaQing += record.player1ZhaQing
-    player1TotalJieQing += record.player1JieQing
-    player2TotalZhaQing += record.player2ZhaQing
-    player2TotalJieQing += record.player2JieQing
-  })
-  
-  return {
-    player1Wins,
-    player2Wins,
-    player1TotalZhaQing,
-    player1TotalJieQing,
-    player2TotalZhaQing,
-    player2TotalJieQing
-  }
-})
-
-let timerInterval: number | null = null
+let timerInterval: number | null = null;
 
 function checkOrientation() {
-  isLandscape.value = window.innerWidth > window.innerHeight
+  const sysInfo = uni.getSystemInfoSync();
+  isLandscape.value = sysInfo.windowWidth > sysInfo.windowHeight;
 }
 
 function handleResize() {
-  checkOrientation()
+  checkOrientation();
 }
 
 const timerProgress = computed(() => {
-  if (gameMode.value !== 'timed') return 100
-  return (remainingTime.value / (matchTime.value * 60)) * 100
-})
+  if (gameMode.value !== 'timed') return 100;
+  return (remainingTime.value / (matchTime.value * 60)) * 100;
+});
+
+function goBack() {
+  uni.redirectTo({ url: '/pages/index/index' });
+}
 
 onMounted(() => {
-  const pages = getCurrentPages()
-  const currentPage = pages[pages.length - 1] as any
-  
+  const pages = getCurrentPages();
+  const currentPage = pages[pages.length - 1] as any;
+
   if (currentPage?.options?.mode) {
-    gameMode.value = currentPage.options.mode
+    gameMode.value = currentPage.options.mode;
   }
-  
+
+  if (currentPage?.options?.count) {
+    playerCount.value = parseInt(currentPage.options.count);
+  }
+
   if (currentPage?.options?.time) {
-    matchTime.value = parseInt(currentPage.options.time)
-    remainingTime.value = matchTime.value * 60
-    showTimer.value = true
-    startTimer()
+    matchTime.value = parseInt(currentPage.options.time);
+    remainingTime.value = matchTime.value * 60;
+    showTimer.value = true;
+    startTimer();
   }
-  
+
   if (currentPage?.options?.round) {
-    winRounds.value = parseInt(currentPage.options.round)
+    winRounds.value = parseInt(currentPage.options.round);
   }
-  
-  if (currentPage?.options?.player1) {
-    player1.value = { name: decodeURIComponent(currentPage.options.player1) }
+
+  // 初始化玩家数据
+  const initialPlayers: Player[] = [];
+  for (let i = 0; i < playerCount.value; i++) {
+    const playerName = currentPage?.options[`player${i + 1}`]
+      ? decodeURIComponent(currentPage.options[`player${i + 1}`])
+      : `选手${i + 1}`;
+    initialPlayers.push({
+      id: i,
+      name: playerName,
+      score: 0,
+      zhaQing: 0,
+      jieQing: 0,
+      wins: 0,
+    });
   }
-  
-  if (currentPage?.options?.player2) {
-    player2.value = { name: decodeURIComponent(currentPage.options.player2) }
-  }
-  
+  players.value = initialPlayers;
+
   if (gameMode.value === 'simple' || gameMode.value === 'rounds') {
-    showTimer.value = true
-    startElapsedTimer()
+    showTimer.value = true;
+    startElapsedTimer();
   }
-  
-  checkOrientation()
-  window.addEventListener('resize', handleResize)
-})
+
+  checkOrientation();
+  uni.onWindowResize(handleResize);
+});
 
 onUnmounted(() => {
   if (timerInterval) {
-    clearInterval(timerInterval)
+    clearInterval(timerInterval);
   }
-  window.removeEventListener('resize', handleResize)
-})
+  uni.offWindowResize(handleResize);
+});
 
 function startTimer() {
   timerInterval = setInterval(() => {
     if (remainingTime.value > 0) {
-      remainingTime.value--
+      remainingTime.value--;
     } else {
-      handleTimeUp()
+      handleTimeUp();
     }
-  }, 1000) as unknown as number
+  }, 1000) as unknown as number;
 }
 
 function startElapsedTimer() {
   timerInterval = setInterval(() => {
-    elapsedTime.value++
-  }, 1000) as unknown as number
+    elapsedTime.value++;
+  }, 1000) as unknown as number;
 }
 
 function stopTimer() {
   if (timerInterval) {
-    clearInterval(timerInterval)
-    timerInterval = null
+    clearInterval(timerInterval);
+    timerInterval = null;
   }
 }
 
 function handleTimeUp() {
   if (timerInterval) {
-    clearInterval(timerInterval)
-    timerInterval = null
+    clearInterval(timerInterval);
+    timerInterval = null;
   }
-  
-  isGameEnded.value = true
-  
+
+  isGameEnded.value = true;
+
   uni.showModal({
     title: '时间到！',
     content: '比赛时间已结束',
@@ -468,584 +441,305 @@ function handleTimeUp() {
     showCancel: false,
     success: (res) => {
       if (res.confirm) {
-        saveMatchRecord()
+        saveMatchRecord();
       }
-    }
-  })
+    },
+  });
 }
 
 function saveMatchRecord() {
-  let winner = -1
-  if (score1.value > score2.value) {
-    winner = 0
-  } else if (score2.value > score1.value) {
-    winner = 1
-  }
-  
-  let matchTimeUsed = elapsedTime.value
+  // 找出得分最高的选手
+  let maxScore = -1;
+  let winnerIndex = -1;
+  players.value.forEach((player, index) => {
+    if (player.score > maxScore) {
+      maxScore = player.score;
+      winnerIndex = index;
+    }
+  });
+
+  let matchTimeUsed = elapsedTime.value;
   if (gameMode.value === 'timed') {
-    matchTimeUsed = matchTime.value * 60 - remainingTime.value
+    matchTimeUsed = matchTime.value * 60 - remainingTime.value;
   }
-  
-  const record: MatchRecord = {
-    player1Name: player1.value.name,
-    player2Name: player2.value.name,
-    player1Score: score1.value,
-    player2Score: score2.value,
-    player1ZhaQing: player1ZhaQing.value,
-    player1JieQing: player1JieQing.value,
-    player2ZhaQing: player2ZhaQing.value,
-    player2JieQing: player2JieQing.value,
-    winner: winner,
-    time: formatTime(matchTimeUsed)
-  }
-  
-  matchRecords.value.unshift(record)
-}
 
-function switchToPlayer(playerId: number) {
-  saveState()
-  const prevPlayer = currentPlayer.value === 0 ? player1.value.name : player2.value.name
-  const newPlayer = playerId === 0 ? player1.value.name : player2.value.name
-  currentPlayer.value = playerId
-  addOperationRecord('switch', `切换选手：${prevPlayer} → ${newPlayer}`)
-}
+  const record = {
+    players: players.value.map((p) => ({
+      name: p.name,
+      score: p.score,
+      zhaQing: p.zhaQing,
+      jieQing: p.jieQing,
+    })),
+    winner: winnerIndex,
+    time: formatTime(matchTimeUsed),
+  };
 
-function handleSettle() {
-  if (isGameEnded.value) {
-    uni.showToast({ title: '比赛已结束', icon: 'none' })
-    return
-  }
-  
-  if (score1.value === 0 && score2.value === 0) {
-    uni.showToast({ title: '本局无分数，无法结算', icon: 'none' })
-    return
-  }
-  
-  uni.showModal({
-    title: '确认结算',
-    content: `${player1.value.name}: ${score1.value}分 (炸清${player1ZhaQing.value}次,接清${player1JieQing.value}次)\n${player2.value.name}: ${score2.value}分 (炸清${player2ZhaQing.value}次,接清${player2JieQing.value}次)\n\n确认结束本局比赛?`,
-    confirmText: '确认结算',
-    cancelText: '继续比赛',
-    confirmColor: '#cc7000',
-    success: (res) => {
-      if (res.confirm) {
-        stopTimer()
-        saveMatchRecord()
-        saveFinalMatchResult()
-        navigateToSettle()
-      }
-    }
-  })
-}
-
-function settleRound() {
-  let winner = -1
-  
-  if (score1.value > score2.value) {
-    player1Wins.value++
-    winner = 0
-    uni.showToast({ title: `${player1.value.name} 赢得本局`, icon: 'none' })
-  } else if (score2.value > score1.value) {
-    player2Wins.value++
-    winner = 1
-    uni.showToast({ title: `${player2.value.name} 赢得本局`, icon: 'none' })
-  } else {
-    winner = -1
-    uni.showToast({ title: '本局平局', icon: 'none' })
-  }
-  
-  const roundResult = {
-    player1Score: score1.value,
-    player2Score: score2.value,
-    player1ZhaQing: player1ZhaQing.value,
-    player1JieQing: player1JieQing.value,
-    player2ZhaQing: player2ZhaQing.value,
-    player2JieQing: player2JieQing.value,
-    roundTime: elapsedTime.value - lastRoundStartTime.value,
-    winner: winner
-  }
-  
-  roundHistory.value.push(roundResult)
-  saveMatchRecord()
-  
-  if (gameMode.value === 'rounds') {
-    checkGameEnd()
-  } else {
-    resetRoundScores()
-    lastRoundStartTime.value = elapsedTime.value
-  }
-}
-
-function checkGameEnd() {
-  if (player1Wins.value >= winRounds.value) {
-    endGame(0)
-  } else if (player2Wins.value >= winRounds.value) {
-    endGame(1)
-  } else {
-    resetRoundScores()
-  }
-}
-
-function endGame(winnerIndex: number) {
-  isGameEnded.value = true
-  stopTimer()
-  
-  if (score1.value > score2.value) {
-    player1Wins.value++
-  } else if (score2.value > score1.value) {
-    player2Wins.value++
-  }
-  
-  saveMatchRecord()
-  saveFinalMatchResult()
-  
-  const statsText = `${player1.value.name}${winnerIndex === 0 ? '(胜)' : ''} VS ${player2.value.name}${winnerIndex === 1 ? '(胜)' : ''}\n${score1.value}:${score2.value}\n${player1.value.name} 炸清:${player1ZhaQing.value} 接清:${player1JieQing.value}\n${player2.value.name} 炸清:${player2ZhaQing.value} 接清:${player2JieQing.value}`
-  
-  uni.showModal({
-    title: '本局结束',
-    content: statsText,
-    confirmText: '结算',
-    cancelText: '再来一局',
-    confirmColor: '#4a9eff',
-    cancelColor: '#cc7000',
-    success: (res) => {
-      if (res.confirm) {
-        navigateToSettle()
-      } else if (res.cancel) {
-        showRoundSettingModal()
-      }
-    }
-  })
-}
-
-function navigateToSettle() {
-  let timeUsed = elapsedTime.value
-  if (gameMode.value === 'timed') {
-    timeUsed = matchTime.value * 60 - remainingTime.value
-  }
-  
-  const stats = totalStats.value
-  
-  let records = [...matchRecords.value]
-  
-  if (records.length === 0 && score1.value > 0) {
-    const winner = score1.value > score2.value ? 0 : (score2.value > score1.value ? 1 : -1)
-    const record = {
-      player1Name: player1.value.name,
-      player2Name: player2.value.name,
-      player1Score: score1.value,
-      player2Score: score2.value,
-      player1ZhaQing: player1ZhaQing.value,
-      player1JieQing: player1JieQing.value,
-      player2ZhaQing: player2ZhaQing.value,
-      player2JieQing: player2JieQing.value,
-      winner: winner,
-      time: formatTime(elapsedTime.value - lastRoundStartTime.value)
-    }
-    records = [record]
-  }
-  
-  const settleData = {
-    player1Name: player1.value.name,
-    player2Name: player2.value.name,
-    player1Wins: player1Wins.value,
-    player2Wins: player2Wins.value,
-    player1TotalZhaQing: stats.player1TotalZhaQing,
-    player1TotalJieQing: stats.player1TotalJieQing,
-    player2TotalZhaQing: stats.player2TotalZhaQing,
-    player2TotalJieQing: stats.player2TotalJieQing,
-    lastRoundScore1: score1.value,
-    lastRoundScore2: score2.value,
-    lastRoundZq1: player1ZhaQing.value,
-    lastRoundJq1: player1JieQing.value,
-    lastRoundZq2: player2ZhaQing.value,
-    lastRoundJq2: player2JieQing.value,
-    matchTime: formatTime(timeUsed),
-    gameMode: gameMode.value,
-    winRounds: winRounds.value,
-    records: records
-  }
-  
-  uni.setStorageSync('matchSettleData', JSON.stringify(settleData))
-  
-  uni.redirectTo({
-    url: '/pages/game/chinese8/settle'
-  })
-}
-
-function saveFinalMatchResult() {
-  const finalResult = {
-    player1Name: player1.value.name,
-    player2Name: player2.value.name,
-    player1Wins: player1Wins.value,
-    player2Wins: player2Wins.value,
-    player1ZhaQing: player1ZhaQing.value,
-    player1JieQing: player1JieQing.value,
-    player2ZhaQing: player2ZhaQing.value,
-    player2JieQing: player2JieQing.value,
-    totalTime: elapsedTime.value,
-    date: new Date().toLocaleString('zh-CN'),
-    gameMode: gameMode.value,
-    winRounds: winRounds.value
-  }
-  
-  try {
-    const history = uni.getStorageSync('matchHistory') || []
-    history.unshift(finalResult)
-    
-    if (history.length > 100) {
-      history.pop()
-    }
-    
-    uni.setStorageSync('matchHistory', history)
-  } catch (e) {
-    console.error('保存比赛记录失败', e)
-  }
-}
-
-function goBackToHome() {
-  uni.reLaunch({
-    url: '/pages/index/index'
-  })
-}
-
-function resetRoundScores() {
-  score1.value = 0
-  score2.value = 0
-  player1ZhaQing.value = 0
-  player1JieQing.value = 0
-  player2ZhaQing.value = 0
-  player2JieQing.value = 0
-  historyStack.value = []
-}
-
-function endMatch() {
-  saveMatchRecord()
-  
-  let result = ''
-  
-  if (gameMode.value === 'rounds') {
-    if (player1Wins.value > player2Wins.value) {
-      result = `${player1.value.name} 以 ${player1Wins.value}:${player2Wins.value} 获胜！`
-    } else if (player2Wins.value > player1Wins.value) {
-      result = `${player2.value.name} 以 ${player1Wins.value}:${player2Wins.value} 获胜！`
-    } else {
-      result = '平局！'
-    }
-  } else {
-    if (score1.value > score2.value) {
-      result = `${player1.value.name} 以 ${score1.value}:${score2.value} 获胜！`
-    } else if (score2.value > score1.value) {
-      result = `${player2.value.name} 以 ${score1.value}:${score2.value} 获胜！`
-    } else {
-      result = '平局！'
-    }
-  }
-  
-  uni.showModal({
-    title: '本局结束',
-    content: result,
-    confirmText: '返回',
-    showCancel: false,
-    success: (res) => {
-      if (res.confirm) {
-      }
-    }
-  })
-}
-
-function goBack() {
-  if (!isGameEnded.value) {
-    stopTimer()
-    saveMatchRecord()
-    isGameEnded.value = true
-  }
-  
-  const pages = getCurrentPages()
-  if (pages.length > 1) {
-    uni.navigateBack({
-      delta: 1,
-      fail: () => {
-        uni.reLaunch({ url: '/pages/index/index' })
-      }
-    })
-  } else {
-    uni.reLaunch({ url: '/pages/index/index' })
-  }
+  matchRecords.value.unshift(record);
 }
 
 function saveState() {
-  const state: GameState = {
-    score1: score1.value,
-    score2: score2.value,
-    player1ZhaQing: player1ZhaQing.value,
-    player1JieQing: player1JieQing.value,
-    player2ZhaQing: player2ZhaQing.value,
-    player2JieQing: player2JieQing.value,
-    player1Wins: player1Wins.value,
-    player2Wins: player2Wins.value,
-    currentPlayer: currentPlayer.value
-  }
-  historyStack.value.push(state)
-  
+  historyStack.value.push({
+    players: JSON.parse(JSON.stringify(players.value)),
+    currentPlayer: currentPlayer.value,
+  });
+
   if (historyStack.value.length > 50) {
-    historyStack.value.shift()
+    historyStack.value.shift();
   }
 }
 
 function undoAction() {
   if (historyStack.value.length === 0) {
-    uni.showToast({ title: '没有可撤回的操作', icon: 'none' })
-    return
+    uni.showToast({ title: '没有可撤销的操作', icon: 'none' });
+    return;
   }
-  
-  const prevState = historyStack.value.pop()!
-  score1.value = prevState.score1
-  score2.value = prevState.score2
-  player1ZhaQing.value = prevState.player1ZhaQing
-  player1JieQing.value = prevState.player1JieQing
-  player2ZhaQing.value = prevState.player2ZhaQing
-  player2JieQing.value = prevState.player2JieQing
-  player1Wins.value = prevState.player1Wins
-  player2Wins.value = prevState.player2Wins
-  currentPlayer.value = prevState.currentPlayer
-  
-  uni.showToast({ title: '已撤回', icon: 'none' })
+
+  const lastState = historyStack.value.pop();
+  if (lastState) {
+    players.value = lastState.players;
+    currentPlayer.value = lastState.currentPlayer;
+    addOperationRecord('undo', '撤销操作');
+  }
 }
 
 function resetGame() {
-  isGameEnded.value = false
-  score1.value = 0
-  score2.value = 0
-  currentPlayer.value = 0
-  player1ZhaQing.value = 0
-  player1JieQing.value = 0
-  player2ZhaQing.value = 0
-  player2JieQing.value = 0
-  player1Wins.value = 0
-  player2Wins.value = 0
-  
-  if (timerInterval) {
-    clearInterval(timerInterval)
-    timerInterval = null
-  }
-  
-  if (gameMode.value === 'timed') {
-    remainingTime.value = matchTime.value * 60
-    startTimer()
-  } else {
-    elapsedTime.value = 0
-    startElapsedTimer()
-  }
-  
-  uni.showToast({ title: '已重置', icon: 'success' })
+  uni.showModal({
+    title: '确认重置',
+    content: '确定要重置比赛吗？所有数据将被清除。',
+    confirmText: '确认重置',
+    cancelText: '取消',
+    confirmColor: '#cc7000',
+    success: (res) => {
+      if (res.confirm) {
+        // 重置所有玩家数据
+        players.value.forEach((player) => {
+          player.score = 0;
+          player.zhaQing = 0;
+          player.jieQing = 0;
+        });
+        currentPlayer.value = 0;
+        operationRecords.value = [];
+        historyStack.value = [];
+        isGameEnded.value = false;
+        elapsedTime.value = 0;
+        if (gameMode.value === 'timed') {
+          remainingTime.value = matchTime.value * 60;
+        }
+        addOperationRecord('settle', '重置游戏');
+      }
+    },
+  });
 }
 
-function addScore(player: number, points: number = 1) {
-  saveState()
-  if (player === 0) {
-    score1.value += points
-  } else {
-    score2.value += points
-  }
-  
-  checkRoundWin()
+function getPlayerRank(playerIndex: number): number {
+  const sortedPlayers = [...players.value].map((p, i) => ({ ...p, originalIndex: i }));
+  sortedPlayers.sort((a, b) => b.score - a.score);
+  const rank = sortedPlayers.findIndex((p) => p.originalIndex === playerIndex) + 1;
+  return rank;
 }
 
-function subtractScore(player: number) {
-  saveState()
-  if (player === 0 && score1.value > 0) {
-    score1.value--
-  } else if (player === 1 && score2.value > 0) {
-    score2.value--
+function switchToPlayer(playerIndex: number) {
+  saveState();
+  const prevPlayer = players.value[currentPlayer.value].name;
+  const newPlayer = players.value[playerIndex].name;
+  currentPlayer.value = playerIndex;
+  addOperationRecord('switch', `切换选手：${prevPlayer} → ${newPlayer}`);
+  // 横屏模式才控制按钮显示
+  if (isLandscape.value) {
+    showActions.value = true;
+    showHeader.value = false;
+    resetHideTimer();
   }
 }
 
 function handleAddScore(playerIndex: number) {
-  if (isGameEnded.value) return
-  const playerName = playerIndex === 0 ? player1.value.name : player2.value.name
-  addScore(playerIndex)
-  addOperationRecord('add', `${playerName} +1分`)
+  saveState();
+  players.value[playerIndex].score++;
+  addOperationRecord('add', `${players.value[playerIndex].name} +1分`);
+
+  if (gameMode.value === 'rounds' && players.value[playerIndex].score >= winRounds.value) {
+    handleRoundWin(playerIndex);
+  }
 }
 
 function handleSubtractScore(playerIndex: number) {
-  if (isGameEnded.value) return
-  const playerName = playerIndex === 0 ? player1.value.name : player2.value.name
-  subtractScore(playerIndex)
-  addOperationRecord('subtract', `${playerName} -1分`)
-}
-
-function markZhaQing(playerIndex: number) {
-  saveState()
-  if (isGameEnded.value) return
-  if (playerIndex === 0) {
-    score1.value += 1
-    player1ZhaQing.value++
-  } else {
-    score2.value += 1
-    player2ZhaQing.value++
+  if (players.value[playerIndex].score > 0) {
+    saveState();
+    players.value[playerIndex].score--;
+    addOperationRecord('subtract', `${players.value[playerIndex].name} -1分`);
   }
-  incrementZhaQing()
-  uni.showToast({ title: '已标记炸清 +1分', icon: 'none' })
-  
-  checkRoundWin()
-}
-
-function handleMarkZhaQing(playerIndex: number) {
-  if (isGameEnded.value) return
-  markZhaQing(playerIndex)
-}
-
-function markJieQing(playerIndex: number) {
-  saveState()
-  if (isGameEnded.value) return
-  if (playerIndex === 0) {
-    score1.value += 1
-    player1JieQing.value++
-  } else {
-    score2.value += 1
-    player2JieQing.value++
-  }
-  incrementJieQing()
-  uni.showToast({ title: '已标记接清 +1分', icon: 'none' })
-  
-  checkRoundWin()
-}
-
-function handleMarkJieQing(playerIndex: number) {
-  if (isGameEnded.value) return
-  markJieQing(playerIndex)
 }
 
 function handleAddZhaQing(playerIndex: number) {
-  if (isGameEnded.value) return
-  const playerName = playerIndex === 0 ? player1.value.name : player2.value.name
-  if (playerIndex === 0) {
-    player1ZhaQing.value++
-    score1.value++
-  } else {
-    player2ZhaQing.value++
-    score2.value++
-  }
-  incrementZhaQing()
-  addOperationRecord('zhaqing', `${playerName} 炸清 +1分`)
-  uni.showToast({ title: '炸清 +1', icon: 'none' })
-  checkRoundWin()
-}
+  saveState();
+  players.value[playerIndex].zhaQing++;
+  players.value[playerIndex].score++;
+  addOperationRecord('zhaqing', `${players.value[playerIndex].name} 炸清 +1分`);
 
-function handleSubtractZhaQing(playerIndex: number) {
-  if (isGameEnded.value) return
-  if (playerIndex === 0 && player1ZhaQing.value > 0) {
-    player1ZhaQing.value--
-    score1.value--
-    uni.showToast({ title: '炸清 -1', icon: 'none' })
-  } else if (playerIndex === 1 && player2ZhaQing.value > 0) {
-    player2ZhaQing.value--
-    score2.value--
-    uni.showToast({ title: '炸清 -1', icon: 'none' })
+  if (gameMode.value === 'rounds' && players.value[playerIndex].score >= winRounds.value) {
+    handleRoundWin(playerIndex);
   }
 }
 
 function handleAddJieQing(playerIndex: number) {
-  if (isGameEnded.value) return
-  const playerName = playerIndex === 0 ? player1.value.name : player2.value.name
-  if (playerIndex === 0) {
-    player1JieQing.value++
-    score1.value++
-  } else {
-    player2JieQing.value++
-    score2.value++
-  }
-  incrementJieQing()
-  addOperationRecord('jieqing', `${playerName} 接清 +1分`)
-  uni.showToast({ title: '接清 +1', icon: 'none' })
-  checkRoundWin()
-}
+  saveState();
+  players.value[playerIndex].jieQing++;
+  players.value[playerIndex].score++;
+  addOperationRecord('jieqing', `${players.value[playerIndex].name} 接清 +1分`);
 
-function handleSubtractJieQing(playerIndex: number) {
-  if (isGameEnded.value) return
-  if (playerIndex === 0 && player1JieQing.value > 0) {
-    player1JieQing.value--
-    score1.value--
-    uni.showToast({ title: '接清 -1', icon: 'none' })
-  } else if (playerIndex === 1 && player2JieQing.value > 0) {
-    player2JieQing.value--
-    score2.value--
-    uni.showToast({ title: '接清 -1', icon: 'none' })
+  if (gameMode.value === 'rounds' && players.value[playerIndex].score >= winRounds.value) {
+    handleRoundWin(playerIndex);
   }
 }
 
-function handleSwitchPlayer(playerIndex: number) {
-  if (playerIndex !== currentPlayer.value) {
-    currentPlayer.value = playerIndex
-    uni.showToast({ title: `${currentPlayer.value === 0 ? player1.value.name : player2.value.name}`, icon: 'none' })
+function handleRoundWin(playerIndex: number) {
+  players.value[playerIndex].wins++;
+  lastRoundStartTime.value = Date.now();
+
+  if (gameMode.value === 'rounds') {
+    checkGameEnd();
   }
 }
 
-function showRoundSettingModal() {
-  const roundOptions = [3, 5, 7, 9, 11]
-  
-  uni.showActionSheet({
-    title: '设置抢局数',
-    itemList: roundOptions.map(r => `抢${r}`),
+function checkGameEnd() {
+  const playersWithWins = players.value.filter((p) => p.wins >= winRounds.value);
+  if (playersWithWins.length > 0) {
+    isGameEnded.value = true;
+    uni.showModal({
+      title: '🎉 比赛结束！',
+      content: `${playersWithWins[0].name} 赢得了比赛！`,
+      confirmText: '查看结算',
+      showCancel: false,
+      confirmColor: '#cc7000',
+      success: (res) => {
+        if (res.confirm) {
+          saveMatchRecord();
+          showActions.value = false;
+          showHeader.value = false;
+        }
+      },
+    });
+  }
+}
+
+function handleSettle() {
+  const content = players.value
+    .map((p) => `${p.name}: ${p.score}分 (炸清${p.zhaQing}次,接清${p.jieQing}次)`)
+    .join('\n');
+
+  uni.showModal({
+    title: '确认结算',
+    content: content + '\n\n确认结束本局比赛?',
+    confirmText: '确认结算',
+    cancelText: '继续比赛',
+    confirmColor: '#cc7000',
     success: (res) => {
-      const selectedRound = roundOptions[res.tapIndex]
-      winRounds.value = selectedRound
-      resetGame()
+      if (res.confirm) {
+        saveMatchRecord();
+        uni.redirectTo({ url: '/pages/index/index' });
+      }
     },
-    fail: () => {
-      // 用户取消选择，不做任何操作
-    }
-  })
+  });
 }
-
-function checkRoundWin() {
-  if (gameMode.value !== 'rounds') return
-  if (isGameEnded.value) return
-  
-  if (score1.value >= winRounds.value) {
-    endGame(0)
-  } else if (score2.value >= winRounds.value) {
-    endGame(1)
-  }
-}
-
 
 function formatTime(seconds: number): string {
-  const mins = Math.floor(seconds / 60)
-  const secs = seconds % 60
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+function toggleActions() {
+  showActions.value = true;
+  showHeader.value = true;
+  resetHideTimer();
+}
+
+// 横屏模式下处理按钮点击，同时重置隐藏计时器
+function handleButtonClick(action: Function) {
+  action();
+  resetHideTimer();
+}
+
+function resetHideTimer() {
+  if (hideTimer) {
+    clearTimeout(hideTimer);
+  }
+  hideTimer = setTimeout(() => {
+    showActions.value = false;
+    showHeader.value = false;
+  }, 3000) as unknown as number;
 }
 </script>
 
 <style lang="scss" scoped>
 .game-page {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background: #000;
-  /* #ifdef MP-WEIXIN */
-  padding-bottom: calc(220rpx + env(safe-area-inset-bottom));
-  /* #endif */
-  /* #ifndef MP-WEIXIN */
-  padding-bottom: 220rpx;
-  /* #endif */
+  box-sizing: border-box;
 }
 
 .main-content {
   display: flex;
   flex-direction: column;
-  gap: 15rpx;
-  padding: 0 20rpx;
+  gap: 8rpx;
+  padding: 0 16rpx;
   width: 100%;
   box-sizing: border-box;
+  transition: padding-top 0.3s ease;
+  height: 100%;
+  overflow-y: auto;
+}
+
+// 竖屏模式下添加底部 padding 防止按钮遮挡内容
+@media (orientation: portrait) {
+  .main-content {
+    padding-bottom: 100rpx;
+  }
+}
+
+// 横屏模式下也添加底部 padding 防止按钮遮挡内容
+@media (orientation: landscape) {
+  .main-content {
+    padding-bottom: 100rpx;
+  }
+}
+
+.main-content.header-shown {
+  padding-top: 100rpx;
 }
 
 .game-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 60rpx 30rpx 20rpx;
+  padding: 40rpx 20rpx 12rpx;
   background: #1a1a2e;
+  transform: translateY(-100%);
+  transition: transform 0.3s ease;
+}
+
+.game-header.show {
+  transform: translateY(0);
+}
+
+@media (orientation: landscape) {
+  .game-header {
+    padding: 30rpx 30rpx 15rpx;
+  }
+
+  .main-content.header-shown {
+    padding-top: 90rpx;
+  }
+
+  .timer-section.header-shown {
+    margin-top: 90rpx;
+  }
 }
 
 .game-header-landscape {
@@ -1069,7 +763,7 @@ function formatTime(seconds: number): string {
   justify-content: center;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
-  
+
   text {
     color: #fff;
     font-size: 48rpx;
@@ -1093,7 +787,7 @@ function formatTime(seconds: number): string {
   padding: 15rpx 25rpx;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 20rpx;
-  
+
   text {
     color: #fff;
     font-size: 26rpx;
@@ -1102,17 +796,22 @@ function formatTime(seconds: number): string {
 
 .timer-section {
   background: rgba(204, 112, 0, 0.1);
-  margin: 0 20rpx 20rpx;
-  padding: 20rpx;
+  margin: 10rpx 16rpx 10rpx;
+  padding: 12rpx 16rpx;
   border-radius: 16rpx;
+  transition: margin-top 0.3s ease;
+}
+
+.timer-section.header-shown {
+  margin-top: 100rpx;
 }
 
 .timer-display {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20rpx;
-  margin-bottom: 15rpx;
+  gap: 12rpx;
+  margin-bottom: 8rpx;
 }
 
 .timer-label {
@@ -1125,9 +824,20 @@ function formatTime(seconds: number): string {
   font-size: 48rpx;
   font-weight: bold;
   font-family: monospace;
-  
+
   &.warning {
-    color: #c44545;
+    color: #e74c3c;
+    animation: pulse 1s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
   }
 }
 
@@ -1146,9 +856,9 @@ function formatTime(seconds: number): string {
 
 .info-section {
   background: rgba(204, 112, 0, 0.1);
-  margin: 0 20rpx 12rpx;
-  padding: 12rpx 20rpx;
-  border-radius: 16rpx;
+  margin: 10rpx 16rpx;
+  padding: 15rpx;
+  border-radius: 12rpx;
 }
 
 .info-content {
@@ -1159,26 +869,21 @@ function formatTime(seconds: number): string {
 }
 
 .rounds-label {
-  color: rgba(255, 255, 255, 0.6);
+  color: #cc7000;
   font-size: 26rpx;
+  font-weight: bold;
 }
 
 .info-divider {
   color: rgba(255, 255, 255, 0.3);
-  font-size: 26rpx;
-}
-
-.rounds-progress {
-  color: #cc7000;
-  font-size: 32rpx;
-  font-weight: bold;
+  font-size: 24rpx;
 }
 
 .layout-portrait {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
-  padding: 16rpx 20rpx;
+  gap: 8rpx;
+  padding: 8rpx 8rpx;
 }
 
 .portrait-card {
@@ -1187,7 +892,7 @@ function formatTime(seconds: number): string {
   overflow: hidden;
   border: 3rpx solid transparent;
   transition: all 0.3s ease;
-  
+
   &.active {
     border-color: #cc7000;
     box-shadow: 0 0 20rpx rgba(204, 112, 0, 0.3);
@@ -1198,85 +903,43 @@ function formatTime(seconds: number): string {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20rpx;
-  
-  .portrait-player-name {
-    color: #fff;
-    font-size: 32rpx;
-    font-weight: bold;
+  padding: 14rpx 18rpx;
+
+  &-player1 {
+    background: #1a70cc;
   }
-}
 
-.portrait-header-player1 {
-  background: #1a70cc;
-}
+  &-player2 {
+    background: #a52a2a;
+  }
 
-.portrait-header-player2 {
-  background: #a52a2a;
-}
+  &-player3 {
+    background: #2d5a27;
+  }
 
-.portrait-current-indicator {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 5rpx 15rpx;
-  border-radius: 10rpx;
-  color: #fff;
-  font-size: 22rpx;
+  &-player4 {
+    background: #8b7355;
+  }
 }
 
 .portrait-order-indicator {
-  background: rgba(0, 0, 0, 0.3);
-  padding: 5rpx 10rpx;
-  border-radius: 8rpx;
-  color: rgba(255, 255, 255, 0.8);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 6rpx 16rpx;
+  border-radius: 12rpx;
   font-size: 20rpx;
+  color: #fff;
+  font-weight: bold;
 }
 
-.portrait-row {
+.portrait-player-name {
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+.portrait-score-area {
+  padding: 14rpx;
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  width: 100%;
-}
-
-.portrait-left {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8rpx;
-}
-
-.portrait-avatar {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #4a9eff 0%, #4ad964 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4rpx 16rpx rgba(74, 158, 255, 0.4);
-  
-  text {
-    color: #fff;
-    font-size: 32rpx;
-    font-weight: bold;
-  }
-}
-
-.portrait-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.portrait-name {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 26rpx;
-  font-weight: 600;
-}
-
-.portrait-center {
-  flex: 1;
-  display: flex;
-  align-items: center;
   justify-content: center;
 }
 
@@ -1284,143 +947,21 @@ function formatTime(seconds: number): string {
   color: #cc7000;
   font-size: 80rpx;
   font-weight: bold;
-  line-height: 1;
-}
-
-.portrait-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 12rpx;
-}
-
-.portrait-btn {
-  width: 64rpx;
-  height: 64rpx;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 36rpx;
-  font-weight: bold;
-  transition: all 0.2s ease;
-  
-  &.plus {
-    background: rgba(74, 217, 100, 0.15);
-    color: #4ad964;
-    border: 2rpx solid rgba(74, 217, 100, 0.4);
-    
-    &:active {
-      transform: scale(0.95);
-      background: rgba(74, 217, 100, 0.3);
-    }
-  }
-  
-  &.minus {
-    background: rgba(255, 107, 107, 0.15);
-    color: #ff6b6b;
-    border: 2rpx solid rgba(255, 107, 107, 0.4);
-    
-    &:active {
-      transform: scale(0.95);
-      background: rgba(255, 107, 107, 0.3);
-    }
-  }
-}
-
-.portrait-stats {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20rpx;
-  padding-top: 12rpx;
-  margin-top: 12rpx;
-  border-top: 1rpx solid rgba(255, 255, 255, 0.1);
-}
-
-.stat-item {
-  display: flex;
-  align-items: center;
-  gap: 6rpx;
-  padding: 6rpx 12rpx;
-  border-radius: 12rpx;
-  transition: all 0.2s ease;
-  
-  &:active {
-    background: rgba(74, 158, 255, 0.2);
-    transform: scale(0.95);
-  }
-}
-
-.stat-label {
-  color: rgba(255, 255, 255, 0.55);
-  font-size: 22rpx;
-}
-
-.stat-value {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 24rpx;
-  font-weight: 600;
-}
-
-.stats-divider {
-  color: rgba(255, 255, 255, 0.25);
-  font-size: 24rpx;
-}
-
-.stat-group {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-}
-
-.stat-btn {
-  width: 40rpx;
-  height: 40rpx;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28rpx;
-  font-weight: bold;
-  background: rgba(255, 107, 107, 0.15);
-  color: #ff6b6b;
-  border: 2rpx solid rgba(255, 107, 107, 0.4);
-  transition: all 0.2s ease;
-  
-  &:active {
-    transform: scale(0.9);
-    background: rgba(255, 107, 107, 0.3);
-  }
-  
-  &.plus {
-    background: rgba(74, 217, 100, 0.15);
-    color: #4ad964;
-    border: 2rpx solid rgba(74, 217, 100, 0.4);
-    
-    &:active {
-      background: rgba(74, 217, 100, 0.3);
-    }
-  }
-}
-
-.portrait-score-area {
-  padding: 30rpx;
-  display: flex;
-  justify-content: center;
+  text-shadow: 0 0 20rpx rgba(204, 112, 0, 0.4);
 }
 
 .portrait-stats-row {
   display: flex;
   justify-content: space-around;
-  padding: 15rpx 10rpx;
+  padding: 8rpx 10rpx;
   border-top: 1rpx solid rgba(255, 255, 255, 0.1);
 }
 
 .portrait-stat-item {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 5rpx;
+  gap: 8rpx;
 }
 
 .stat-num {
@@ -1434,485 +975,59 @@ function formatTime(seconds: number): string {
   font-size: 20rpx;
 }
 
-.portrait-controls {
-  display: flex;
-  padding: 15rpx;
-  gap: 10rpx;
-}
-
-.portrait-control-btn {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8rpx;
-  padding: 20rpx 10rpx;
-  background: #1a6b1a;
-  border-radius: 12rpx;
-  color: #fff;
-  font-size: 26rpx;
-  font-weight: bold;
-  transition: all 0.2s ease;
-  
-  &:active {
-    transform: scale(0.95);
-    opacity: 0.8;
-  }
-  
-  &.minus {
-    background: #a52a2a;
-  }
-  
-  &.zhaqing-btn {
-    background: #cc7000;
-  }
-  
-  &.jieqing-btn {
-    background: #cc7000;
-  }
-}
-
-.portrait-vs {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20rpx;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 16rpx;
-  
-  text {
-    color: #cc7000;
-    font-size: 40rpx;
-    font-weight: bold;
-    text-shadow: 0 0 20rpx rgba(204, 112, 0, 0.4);
-  }
-}
-
 .layout-landscape {
   display: flex;
   flex-direction: column;
   gap: 8rpx;
   padding: 8rpx 12rpx;
-  height: auto;
-  max-height: 700rpx;
 }
 
-.landscape-top {
+.landscape-players-container {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: stretch;
   gap: 8rpx;
-  padding: 2rpx 8rpx;
 }
 
-.landscape-actions-left,
-.landscape-actions-right {
-  display: flex;
-  flex-direction: column;
-  gap: 5rpx;
-}
-
-.landscape-btn {
-  width: 50rpx;
-  height: 80rpx;
-  border-radius: 10rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28rpx;
-  font-weight: bold;
-  
-  &.plus {
-    background: rgba(74, 217, 100, 0.2);
-    color: #4ad964;
-    border: 2rpx solid rgba(74, 217, 100, 0.5);
-  }
-  
-  &.minus {
-    background: rgba(255, 107, 107, 0.2);
-    color: #ff6b6b;
-    border: 2rpx solid rgba(255, 107, 107, 0.5);
-  }
-}
-
-.landscape-player-score {
+.landscape-player-card {
   flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 16rpx;
-  border: 3rpx solid transparent;
-  transition: all 0.3s ease;
-  padding: 10rpx;
-  height: 180rpx;
-  
-  &.active {
-    background: rgba(74, 158, 255, 0.15);
-    border-color: #4a9eff;
-  }
+  flex-direction: column;
 }
 
-.landscape-score {
-  color: #4a9eff;
-  font-size: 140rpx;
-  font-weight: bold;
-  line-height: 1;
-}
-
-.landscape-bottom {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  padding: 2rpx 10rpx;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 6rpx;
-  height: 60rpx;
-}
-
-.landscape-player-info {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 8rpx;
-}
-
-.landscape-name {
-  color: #fff;
-  font-size: 20rpx;
-  font-weight: bold;
-}
-
-.landscape-stat {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 16rpx;
-}
-
-.landscape-divider {
-  color: rgba(255, 255, 255, 0.3);
-  font-size: 24rpx;
-  margin: 0 20rpx;
-}
-
-.landscape-center {
+.landscape-center-area {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 30rpx;
-  padding: 0 3rpx;
-  gap: 1rpx;
-  min-width: 30rpx;
+  gap: 10rpx;
+  padding: 0 15rpx;
+  min-width: 120rpx;
 }
 
-.landscape-vs {
-  color: #4a9eff;
-  font-size: 20rpx;
-  font-weight: bold;
-  line-height: 1.2;
-}
-
-.landscape-info-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8rpx;
-  padding: 3rpx 10rpx;
-  height: 60rpx;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 10rpx;
-}
-
-.landscape-rounds {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 22rpx;
-}
-
-.landscape-info-divider {
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 22rpx;
-}
-
-.landscape-timer-label {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 20rpx;
-}
-
-.landscape-timer-value {
-  color: #4a9eff;
-  font-size: 28rpx;
-  font-weight: bold;
-}
-
-.stats-row {
-  display: flex;
-  gap: 30rpx;
-  
-  .stat-item {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 24rpx;
-  }
-}
-
-.vs-area {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 15rpx 30rpx;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 12rpx;
-}
-
-.vs-text {
-  color: #4a9eff;
-  font-size: 48rpx;
-  font-weight: bold;
-}
-
-@media screen and (min-width: 768px) {
-  .game-area {
-    flex-direction: row;
-    align-items: stretch;
-    gap: 20rpx;
-  }
-  
-  .player-area {
-    flex-direction: column;
-    flex: 1;
-    gap: 10rpx;
-  }
-  
-  .action-buttons {
-    flex-direction: row;
-    justify-content: flex-end;
-    padding-right: 20rpx;
-  }
-  
-  .player-left .action-buttons {
-    justify-content: flex-start;
-    padding-left: 20rpx;
-  }
-  
-  .player-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  
-  .vs-area {
-    flex-direction: column;
-    padding: 20rpx 30rpx;
-  }
-  
-  .vs-text {
-    font-size: 56rpx;
-  }
-}
-
-.records-section {
-  padding: 0 20rpx 20rpx;
-}
-
-.records-header {
-  margin-bottom: 16rpx;
-}
-
-.records-title {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 28rpx;
-  font-weight: 600;
-}
-
-.records-list {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 16rpx;
-  padding: 12rpx;
-}
-
-.record-item {
-  display: flex;
-  align-items: center;
-  padding: 12rpx 0;
-  
-  &:not(:last-child) {
-    border-bottom: 1rpx solid rgba(255, 255, 255, 0.1);
-  }
-}
-
-.record-side {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16rpx;
-  flex: 1;
-  
-  &.winner {
-    .record-player {
-      color: #4ad964;
-    }
-    
-    .record-result {
-      color: #4ad964;
-      background: rgba(74, 217, 100, 0.15);
-    }
-  }
-}
-
-.record-player {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 26rpx;
-  font-weight: 600;
-}
-
-.record-result {
-  color: #ff6b6b;
-  font-size: 22rpx;
-  font-weight: bold;
-  padding: 4rpx 12rpx;
-  background: rgba(255, 107, 107, 0.15);
-  border-radius: 20rpx;
-  
-  &.draw {
-    color: #999;
-    background: rgba(255, 255, 255, 0.1);
-  }
-}
-
-.record-stats {
-  color: rgba(255, 255, 255, 0.55);
-  font-size: 22rpx;
-}
-
-.record-divider {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0 12rpx;
-  gap: 4rpx;
-}
-
-.divider-line {
-  color: rgba(255, 255, 255, 0.3);
-  font-size: 28rpx;
-}
-
-.divider-score {
-  color: #cc7000;
-  font-size: 24rpx;
-  font-weight: bold;
-}
-
-.divider-time {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 20rpx;
-}
-
-.record-summary {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16rpx;
-  padding: 16rpx;
-  background: rgba(204, 112, 0, 0.1);
-  border-radius: 12rpx;
-  margin-bottom: 8rpx;
-}
-
-.summary-player {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 28rpx;
-  font-weight: 600;
-}
-
-.summary-score {
+.landscape-vs-text {
   color: #cc7000;
   font-size: 48rpx;
   font-weight: bold;
+  text-shadow: 0 0 20rpx rgba(204, 112, 0, 0.4);
 }
 
-.summary-vs {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 24rpx;
-}
-
-.record-divider-line {
-  height: 1rpx;
-  background: rgba(255, 255, 255, 0.1);
-  margin: 8rpx 0;
-}
-
-.bottom-actions {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(0, 0, 0, 0.9);
-  padding: 20rpx;
-  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
-  border-top: 1rpx solid rgba(255, 255, 255, 0.1);
-}
-
-.action-btn-wrap {
-  display: flex;
-  gap: 12rpx;
-}
-
-.bottom-btn {
-  flex: 1;
-  height: 80rpx;
+.landscape-game-info {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12rpx;
-  transition: all 0.2s ease;
-  
-  &:active {
-    transform: scale(0.95);
-    opacity: 0.8;
-  }
-  
-  text {
-    font-size: 24rpx;
-    font-weight: bold;
-    color: #fff;
-  }
-  
-  &.switch-btn {
-    background: #4a9eff;
-  }
-  
-  &.plus-btn {
-    background: #1a6b1a;
-  }
-  
-  &.minus-btn {
-    background: #a52a2a;
-  }
-  
-  &.zhaqing-btn {
-    background: #cc7000;
-  }
-  
-  &.jieqing-btn {
-    background: #cc7000;
-  }
-  
-  &.undo-btn {
-    background: #607d8b;
-  }
-  
-  &.settle-btn {
-    background: #9c27b0;
-  }
+}
+
+.landscape-info-text {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 24rpx;
 }
 
 .operation-records-section {
-  padding: 15rpx 20rpx;
+  padding: 8rpx 14rpx;
   background: rgba(26, 26, 46, 0.95);
   border-radius: 12rpx;
-  margin: 15rpx 20rpx;
-  margin-bottom: 15rpx;
+  margin: 6rpx 8rpx;
   border: 1rpx solid rgba(255, 140, 0, 0.2);
 }
 
@@ -1920,27 +1035,27 @@ function formatTime(seconds: number): string {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12rpx;
-  padding-bottom: 8rpx;
+  margin-bottom: 8rpx;
+  padding-bottom: 6rpx;
   border-bottom: 1rpx solid rgba(255, 255, 255, 0.1);
 }
 
 .records-title {
   color: #ff8c00;
-  font-size: 26rpx;
+  font-size: 24rpx;
   font-weight: bold;
 }
 
 .records-more-btn {
   color: rgba(255, 255, 255, 0.6);
-  font-size: 24rpx;
-  padding: 8rpx 16rpx;
+  font-size: 22rpx;
+  padding: 6rpx 14rpx;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 20rpx;
 }
 
 .records-list {
-  max-height: 200rpx;
+  max-height: 150rpx;
 }
 
 .record-item {
@@ -1948,50 +1063,128 @@ function formatTime(seconds: number): string {
   gap: 15rpx;
   padding: 10rpx 0;
   border-bottom: 1rpx solid rgba(255, 255, 255, 0.05);
-  
+
   &:last-child {
     border-bottom: none;
+  }
+
+  &.add {
+    background: rgba(46, 125, 50, 0.1);
+  }
+
+  &.subtract {
+    background: rgba(198, 40, 40, 0.1);
+  }
+
+  &.zhaqing {
+    background: rgba(204, 112, 0, 0.1);
+  }
+
+  &.jieqing {
+    background: rgba(76, 175, 80, 0.1);
+  }
+
+  &.switch {
+    background: rgba(33, 150, 243, 0.1);
+  }
+
+  &.undo {
+    background: rgba(158, 158, 158, 0.1);
+  }
+
+  &.settle {
+    background: rgba(156, 39, 176, 0.1);
   }
 }
 
 .record-time {
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 22rpx;
-  font-family: monospace;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 20rpx;
   flex-shrink: 0;
 }
 
 .record-desc {
-  color: rgba(255, 255, 255, 0.8);
+  color: #fff;
   font-size: 24rpx;
   flex: 1;
 }
 
-.record-item.win .record-desc {
-  color: #ffd93d;
-}
-
-.record-item.subtract .record-desc {
-  color: #ff6b6b;
-}
-
-.record-item.zhaqing .record-desc {
-  color: #ffd93d;
-}
-
-.record-item.jieqing .record-desc {
-  color: #a855f7;
-}
-
-.record-item.switch .record-desc {
-  color: #4a9eff;
-}
-
 .empty-records {
   text-align: center;
-  padding: 20rpx;
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 24rpx;
+  padding: 30rpx 0;
+
+  text {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 24rpx;
+  }
+}
+
+.bottom-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 500;
+  background: rgba(0, 0, 0, 0.95);
+  padding: 12rpx 16rpx;
+  padding-bottom: calc(12rpx + env(safe-area-inset-bottom));
+  border-top: 1rpx solid rgba(255, 255, 255, 0.1);
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+
+.bottom-actions.show {
+  transform: translateY(0);
+}
+
+.action-btn-wrap {
+  display: flex;
+  gap: 8rpx;
+}
+
+.bottom-btn {
+  flex: 1;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12rpx;
+  transition: all 0.2s ease;
+
+  &:active {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+
+  text {
+    font-size: 20rpx;
+    font-weight: bold;
+    color: #fff;
+  }
+
+  &.plus-btn {
+    background: #3d964d;
+  }
+
+  &.minus-btn {
+    background: #c62828;
+  }
+
+  &.zhaqing-btn {
+    background: #cc7000;
+  }
+
+  &.jieqing-btn {
+    background: #4caf50;
+  }
+
+  &.undo-btn {
+    background: #9e9e9e;
+  }
+
+  &.settle-btn {
+    background: #9c27b0;
+  }
 }
 
 .modal-overlay {
@@ -2004,12 +1197,12 @@ function formatTime(seconds: number): string {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: 1000;
 }
 
 .records-modal {
-  width: 90%;
-  max-height: 70vh;
+  width: 85%;
+  max-height: 80vh;
   background: #1a1a2e;
   border-radius: 20rpx;
   overflow: hidden;
@@ -2017,15 +1210,15 @@ function formatTime(seconds: number): string {
 
 .records-modal-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 25rpx 30rpx;
   border-bottom: 1rpx solid rgba(255, 255, 255, 0.1);
 }
 
 .records-modal-title {
-  color: #ff8c00;
-  font-size: 32rpx;
+  color: #fff;
+  font-size: 30rpx;
   font-weight: bold;
 }
 
@@ -2035,12 +1228,17 @@ function formatTime(seconds: number): string {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 32rpx;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+
+  text {
+    color: #fff;
+    font-size: 28rpx;
+  }
 }
 
 .records-modal-list {
   max-height: 60vh;
-  padding: 15rpx 30rpx 30rpx;
+  padding: 20rpx 30rpx;
 }
 </style>
