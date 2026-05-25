@@ -89,7 +89,7 @@
           </view>
         </view>
 
-        <view class="layout-landscape" v-else @tap="toggleActions">
+        <view class="layout-landscape" v-else>
           <view class="landscape-players-container">
             <view
               v-for="(player, index) in players"
@@ -113,6 +113,38 @@
                   <text class="stat-num">{{ player.jieQing }}</text>
                   <text class="stat-label">接清</text>
                 </view>
+              </view>
+            </view>
+          </view>
+
+          <view class="landscape-bottom-actions">
+            <view class="action-btn-wrap landscape-action-wrap">
+              <view
+                class="bottom-btn plus-btn"
+                @tap.stop="handleAddScore(currentPlayer)"
+              >
+                <text>加分</text>
+              </view>
+              <view
+                class="bottom-btn minus-btn"
+                @tap.stop="handleSubtractScore(currentPlayer)"
+              >
+                <text>减分</text>
+              </view>
+              <view
+                class="bottom-btn zhaqing-btn"
+                @tap.stop="handleAddZhaQing(currentPlayer)"
+              >
+                <text>炸清</text>
+              </view>
+              <view
+                class="bottom-btn jieqing-btn"
+                @tap.stop="handleAddJieQing(currentPlayer)"
+              >
+                <text>接清</text>
+              </view>
+              <view class="bottom-btn settle-btn" @tap.stop="handleSettle">
+                <text>结算</text>
               </view>
             </view>
           </view>
@@ -167,61 +199,7 @@
           </view>
         </view>
 
-        <view
-          class="bottom-actions landscape-bottom-actions"
-          :class="{ show: showActions }"
-          v-if="isLandscape"
-        >
-          <view class="action-btn-wrap">
-            <view
-              class="bottom-btn plus-btn"
-              @tap.stop="
-                () => {
-                  handleAddScore(currentPlayer);
-                  resetHideTimer();
-                }
-              "
-            >
-              <text>加分</text>
-            </view>
-            <view
-              class="bottom-btn minus-btn"
-              @tap.stop="
-                () => {
-                  handleSubtractScore(currentPlayer);
-                  resetHideTimer();
-                }
-              "
-            >
-              <text>减分</text>
-            </view>
-            <view
-              class="bottom-btn zhaqing-btn"
-              @tap.stop="
-                () => {
-                  handleAddZhaQing(currentPlayer);
-                  resetHideTimer();
-                }
-              "
-            >
-              <text>炸清</text>
-            </view>
-            <view
-              class="bottom-btn jieqing-btn"
-              @tap.stop="
-                () => {
-                  handleAddJieQing(currentPlayer);
-                  resetHideTimer();
-                }
-              "
-            >
-              <text>接清</text>
-            </view>
-            <view class="bottom-btn settle-btn" @tap.stop="handleSettle">
-              <text>结算</text>
-            </view>
-          </view>
-        </view>
+
       </view>
     </view>
 
@@ -1191,6 +1169,25 @@ function resetHideTimer() {
 
   &.settle-btn {
     background: #9c27b0;
+  }
+}
+
+.landscape-bottom-actions {
+  padding: 8rpx 12rpx;
+  background: rgba(26, 26, 46, 0.95);
+  border-radius: 12rpx;
+  margin-top: auto;
+}
+
+.landscape-action-wrap {
+  gap: 6rpx;
+}
+
+.landscape-action-wrap .bottom-btn {
+  height: 48rpx;
+
+  text {
+    font-size: 18rpx;
   }
 }
 
