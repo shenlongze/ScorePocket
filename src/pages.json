@@ -15,7 +15,8 @@
 		{
 			"path": "pages/game/onevone/index",
 			"style": {
-				"navigationBarTitleText": "1V1对战"
+				"navigationBarTitleText": "1V1对战",
+				"pageOrientation": "auto"
 			}
 		},
 		{
@@ -27,49 +28,57 @@
 		{
 			"path": "pages/game/zambo/index",
 			"style": {
-				"navigationBarTitleText": "抓迷糊"
+				"navigationBarTitleText": "抓迷糊",
+				"pageOrientation": "auto"
 			}
 		},
 		{
 			"path": "pages/game/chinese8/index",
 			"style": {
-				"navigationBarTitleText": "中式八球"
+				"navigationBarTitleText": "中式八球",
+				"pageOrientation": "auto"
 			}
 		},
 		{
 			"path": "pages/game/chinese8/settle",
 			"style": {
-				"navigationBarTitleText": "比赛结算"
+				"navigationBarTitleText": "比赛结算",
+				"pageOrientation": "auto"
 			}
 		},
 		{
 			"path": "pages/game/nineball/config",
 			"style": {
-				"navigationBarTitleText": "比赛配置"
+				"navigationBarTitleText": "比赛配置",
+				"pageOrientation": "auto"
 			}
 		},
 		{
 			"path": "pages/game/nineball/index",
 			"style": {
-				"navigationBarTitleText": "中式九球"
+				"navigationBarTitleText": "中式九球",
+				"pageOrientation": "auto"
 			}
 		},
 		{
 			"path": "pages/game/nineball/records",
 			"style": {
-				"navigationBarTitleText": "操作记录"
+				"navigationBarTitleText": "操作记录",
+				"pageOrientation": "auto"
 			}
 		},
 		{
 			"path": "pages/game/snooker/config",
 			"style": {
-				"navigationBarTitleText": "比赛配置"
+				"navigationBarTitleText": "比赛配置",
+				"pageOrientation": "auto"
 			}
 		},
 		{
 			"path": "pages/game/snooker/index",
 			"style": {
-				"navigationBarTitleText": "斯诺克"
+				"navigationBarTitleText": "斯诺克",
+				"pageOrientation": "auto"
 			}
 		},
 		{
