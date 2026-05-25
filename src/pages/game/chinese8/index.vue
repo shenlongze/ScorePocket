@@ -980,6 +980,8 @@ function resetHideTimer() {
   flex-direction: column;
   gap: 8rpx;
   padding: 8rpx 12rpx;
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
 .landscape-players-container {
@@ -987,12 +989,15 @@ function resetHideTimer() {
   flex-direction: row;
   align-items: stretch;
   gap: 8rpx;
+  flex: 1;
+  min-height: 0;
 }
 
 .landscape-player-card {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .landscape-center-area {
