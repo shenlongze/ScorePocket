@@ -433,6 +433,19 @@ function handleResize() {
   updateScreenSize();
 }
 
+function handleOrientationChange(event: DeviceOrientationEvent) {
+  if (event.gamma === null || event.beta === null) return;
+  
+  const gamma = Math.abs(event.gamma);
+  const beta = Math.abs(event.beta);
+  
+  if (gamma > 45 && gamma < 135) {
+    isLandscape.value = true;
+  } else if (beta > 45) {
+    isLandscape.value = false;
+  }
+}
+
 onMounted(() => {
   if (players.value.length === 0) {
     players.value = config.value.playerNames.map((name, index) => ({
@@ -472,6 +485,11 @@ onMounted(() => {
   checkOrientation();
   updateScreenSize();
   window.addEventListener('resize', handleResize);
+  
+  // 监听设备方向变化
+  if (window.DeviceOrientationEvent) {
+    window.addEventListener('deviceorientation', handleOrientationChange);
+  }
 });
 
 onUnmounted(() => {
@@ -481,6 +499,11 @@ onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
   if (hideTimer) {
     clearTimeout(hideTimer);
+  }
+  
+  // 移除设备方向变化监听
+  if (window.DeviceOrientationEvent) {
+    window.removeEventListener('deviceorientation', handleOrientationChange);
   }
 });
 
