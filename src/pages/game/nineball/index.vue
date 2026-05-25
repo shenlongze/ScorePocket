@@ -419,31 +419,20 @@ const roundText = computed(() => {
 });
 
 function checkOrientation() {
-  isLandscape.value = window.innerWidth > window.innerHeight;
+  const sysInfo = uni.getSystemInfoSync();
+  isLandscape.value = sysInfo.windowWidth > sysInfo.windowHeight;
 }
 
 function updateScreenSize() {
-  screenWidth.value = window.innerWidth;
-  screenHeight.value = window.innerHeight;
-  availableHeight.value = window.innerHeight;
+  const sysInfo = uni.getSystemInfoSync();
+  screenWidth.value = sysInfo.windowWidth;
+  screenHeight.value = sysInfo.windowHeight;
+  availableHeight.value = sysInfo.windowHeight;
 }
 
 function handleResize() {
   checkOrientation();
   updateScreenSize();
-}
-
-function handleOrientationChange(event: DeviceOrientationEvent) {
-  if (event.gamma === null || event.beta === null) return;
-  
-  const gamma = Math.abs(event.gamma);
-  const beta = Math.abs(event.beta);
-  
-  if (gamma > 45 && gamma < 135) {
-    isLandscape.value = true;
-  } else if (beta > 45) {
-    isLandscape.value = false;
-  }
 }
 
 onMounted(() => {
@@ -484,26 +473,16 @@ onMounted(() => {
   // 横屏检测
   checkOrientation();
   updateScreenSize();
-  window.addEventListener('resize', handleResize);
-  
-  // 监听设备方向变化
-  if (window.DeviceOrientationEvent) {
-    window.addEventListener('deviceorientation', handleOrientationChange);
-  }
+  uni.onWindowResize(handleResize);
 });
 
 onUnmounted(() => {
   if (timerInterval) {
     clearInterval(timerInterval);
   }
-  window.removeEventListener('resize', handleResize);
+  uni.offWindowResize(handleResize);
   if (hideTimer) {
     clearTimeout(hideTimer);
-  }
-  
-  // 移除设备方向变化监听
-  if (window.DeviceOrientationEvent) {
-    window.removeEventListener('deviceorientation', handleOrientationChange);
   }
 });
 
