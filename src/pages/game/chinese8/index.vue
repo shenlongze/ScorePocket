@@ -100,25 +100,29 @@
             >
               <view class="portrait-header" :class="`portrait-header-player${(index % 4) + 1}`">
                 <text class="portrait-player-name">{{ player.name }}</text>
+                <view v-if="currentPlayer === index" class="current-indicator">当前</view>
               </view>
               <view class="portrait-score-area">
                 <view class="portrait-score">{{ player.score }}</view>
               </view>
               <view class="portrait-stats-row">
-                <view class="portrait-stat-item">
-                  <text class="stat-num">{{ player.zhaQing }}</text>
-                  <text class="stat-label">炸清</text>
-                </view>
-                <view class="portrait-stat-item">
-                  <text class="stat-num">{{ player.jieQing }}</text>
-                  <text class="stat-label">接清</text>
-                </view>
+                <text class="stat-label">炸清</text>
+                <text class="stat-num">{{ player.zhaQing }}</text>
+                <text class="stat-divider">|</text>
+                <text class="stat-label">接清</text>
+                <text class="stat-num">{{ player.jieQing }}</text>
               </view>
             </view>
           </view>
 
-          <view class="landscape-bottom-actions">
-            <view class="action-btn-wrap landscape-action-wrap">
+          <view class="landscape-bottom-area">
+            <view class="action-btn-wrap">
+              <view
+                class="bottom-btn undo-btn"
+                @tap.stop="undoAction"
+              >
+                <text>撤销</text>
+              </view>
               <view
                 class="bottom-btn plus-btn"
                 @tap.stop="handleAddScore(currentPlayer)"
@@ -126,10 +130,10 @@
                 <text>加分</text>
               </view>
               <view
-                class="bottom-btn minus-btn"
-                @tap.stop="handleSubtractScore(currentPlayer)"
+                class="bottom-btn jieqing-btn"
+                @tap.stop="handleAddJieQing(currentPlayer)"
               >
-                <text>减分</text>
+                <text>接清</text>
               </view>
               <view
                 class="bottom-btn zhaqing-btn"
@@ -137,17 +141,28 @@
               >
                 <text>炸清</text>
               </view>
-              <view
-                class="bottom-btn jieqing-btn"
-                @tap.stop="handleAddJieQing(currentPlayer)"
-              >
-                <text>接清</text>
-              </view>
               <view class="bottom-btn settle-btn" @tap.stop="handleSettle">
                 <text>结算</text>
               </view>
             </view>
+            <view class="landscape-timer-bar">
+              <view class="landscape-timer-info">
+                <text class="timer-value">{{ formattedTime }}</text>
+                <text class="round-value">局数: {{ completedRounds }}/{{ winRounds || '-' }}</text>
+              </view>
+              <view class="timer-btn" :class="{ active: isTimerRunning }" @tap.stop="toggleTimer">
+                {{ isTimerRunning ? '暂停计时' : '开始计时' }}
+              </view>
+            </view>
           </view>
+        </view>
+
+        <view class="match-score-bar" v-if="!isLandscape && hasRestarted">
+          <text class="score-player">{{ players[0]?.name }}</text>
+          <text class="score-value">{{ matchHistory.length > 0 ? matchHistory[matchHistory.length - 1].player1Wins : 0 }}</text>
+          <text class="score-divider">:</text>
+          <text class="score-value">{{ matchHistory.length > 0 ? matchHistory[matchHistory.length - 1].player2Wins : 0 }}</text>
+          <text class="score-player">{{ players[1]?.name }}</text>
         </view>
 
         <view class="operation-records-section" v-if="!isLandscape">
@@ -155,10 +170,7 @@
             <view class="records-title">操作记录</view>
             <view
               class="records-more-btn"
-              @tap.stop="
-                showFullRecords;
-                resetHideTimer;
-              "
+              @tap.stop="handleShowFullRecords"
             >
               <text>更多</text>
             </view>
@@ -171,6 +183,7 @@
               :class="record.action"
             >
               <text class="record-time">{{ record.time }}</text>
+              <text class="record-round-time">{{ record.roundTime }}</text>
               <text class="record-desc">{{ record.description }}</text>
             </view>
             <view v-if="operationRecords.length === 0" class="empty-records">
@@ -181,17 +194,17 @@
 
         <view class="bottom-actions show" v-if="!isLandscape">
           <view class="action-btn-wrap">
+            <view class="bottom-btn undo-btn" @tap.stop="undoAction">
+              <text>撤销</text>
+            </view>
             <view class="bottom-btn plus-btn" @tap.stop="handleAddScore(currentPlayer)">
               <text>加分</text>
             </view>
-            <view class="bottom-btn minus-btn" @tap.stop="handleSubtractScore(currentPlayer)">
-              <text>减分</text>
+            <view class="bottom-btn jieqing-btn" @tap.stop="handleAddJieQing(currentPlayer)">
+              <text>接清</text>
             </view>
             <view class="bottom-btn zhaqing-btn" @tap.stop="handleAddZhaQing(currentPlayer)">
               <text>炸清</text>
-            </view>
-            <view class="bottom-btn jieqing-btn" @tap.stop="handleAddJieQing(currentPlayer)">
-              <text>接清</text>
             </view>
             <view class="bottom-btn settle-btn" @tap.stop="handleSettle">
               <text>结算</text>
@@ -219,12 +232,83 @@
             :class="record.action"
           >
             <text class="record-time">{{ record.time }}</text>
+            <text class="record-round-time">{{ record.roundTime }}</text>
             <text class="record-desc">{{ record.description }}</text>
           </view>
           <view v-if="operationRecords.length === 0" class="empty-records">
             <text>暂无操作记录</text>
           </view>
         </scroll-view>
+      </view>
+    </view>
+
+    <view v-if="showSettleModal" class="modal-overlay" @tap="cancelSettle">
+      <view class="settle-modal" @tap.stop>
+        <view class="settle-modal-header">
+          <text class="settle-modal-title">比赛结算</text>
+          <view class="settle-modal-close" @tap="cancelSettle">
+            <text>✕</text>
+          </view>
+        </view>
+        
+        <view class="settle-content">
+          <view class="settle-section">
+            <text class="settle-section-title">总比分</text>
+            <view class="settle-score-row">
+              <text class="settle-player-name">{{ players[0]?.name }}</text>
+              <text class="settle-player-score">{{ matchHistory.length > 0 ? matchHistory[matchHistory.length - 1].player1Wins : 0 }}</text>
+              <text class="settle-divider">:</text>
+              <text class="settle-player-score">{{ matchHistory.length > 0 ? matchHistory[matchHistory.length - 1].player2Wins : 0 }}</text>
+              <text class="settle-player-name">{{ players[1]?.name }}</text>
+            </view>
+          </view>
+
+          <scroll-view class="round-history" scroll-y>
+            <view 
+              v-for="(record, index) in [...matchHistory].reverse()" 
+              :key="record.round"
+              class="round-item"
+            >
+              <view class="round-header">
+                <text class="round-title">第{{ record.round }}局</text>
+              </view>
+              <view class="round-score-row">
+                <text class="round-player-name">{{ players[0]?.name }}</text>
+                <text class="round-player-score">{{ record.player1Score }}</text>
+                <text class="round-divider">:</text>
+                <text class="round-player-score">{{ record.player2Score }}</text>
+                <text class="round-player-name">{{ players[1]?.name }}</text>
+              </view>
+              <view class="round-stats">
+                <view class="round-stat-item">
+                  <text class="round-stat-label">{{ players[0]?.name }} 炸清</text>
+                  <text class="round-stat-value">{{ record.player1ZhaQing }}次</text>
+                </view>
+                <view class="round-stat-item">
+                  <text class="round-stat-label">{{ players[0]?.name }} 接清</text>
+                  <text class="round-stat-value">{{ record.player1JieQing }}次</text>
+                </view>
+                <view class="round-stat-item">
+                  <text class="round-stat-label">{{ players[1]?.name }} 炸清</text>
+                  <text class="round-stat-value">{{ record.player2ZhaQing }}次</text>
+                </view>
+                <view class="round-stat-item">
+                  <text class="round-stat-label">{{ players[1]?.name }} 接清</text>
+                  <text class="round-stat-value">{{ record.player2JieQing }}次</text>
+                </view>
+              </view>
+            </view>
+
+            <view v-if="matchHistory.length === 0" class="empty-rounds">
+              <text>暂无比赛记录</text>
+            </view>
+          </scroll-view>
+        </view>
+
+        <view class="settle-modal-footer">
+          <view class="settle-btn cancel-btn" @tap="handleRestart">重新开始</view>
+          <view class="settle-btn confirm-btn" @tap="confirmSettle">确认结算</view>
+        </view>
       </view>
     </view>
   </view>
@@ -259,9 +343,45 @@ const isLandscape = ref(false);
 const showActions = ref(false);
 const showHeader = ref(false);
 let hideTimer: number | null = null;
+const completedRounds = ref(0);
+const isTimerRunning = ref(false);
+const screenHeight = ref(0);
+
+const formattedTime = computed(() => {
+  const time = gameMode.value === 'timed' ? remainingTime.value : elapsedTime.value;
+  const hours = Math.floor(time / 3600);
+  const minutes = Math.floor((time % 3600) / 60);
+  const seconds = time % 60;
+  if (hours > 0) {
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+});
+
+function toggleTimer() {
+  if (isTimerRunning.value) {
+    stopTimer();
+  } else {
+    startElapsedTimer();
+  }
+  isTimerRunning.value = !isTimerRunning.value;
+}
 
 const lastRoundStartTime = ref(0);
 const roundHistory = ref<any[]>([]);
+const hasRestarted = ref(false);
+const matchHistory = ref<{ 
+  round: number;
+  player1Score: number;
+  player2Score: number;
+  player1ZhaQing: number;
+  player1JieQing: number;
+  player2ZhaQing: number;
+  player2JieQing: number;
+  player1Wins: number;
+  player2Wins: number;
+}[]>([]);
+const showSettleModal = ref(false);
 
 interface GameState {
   players: Player[];
@@ -273,8 +393,9 @@ const historyStack = ref<GameState[]>([]);
 interface OperationRecord {
   id: number;
   time: string;
-  action: 'add' | 'subtract' | 'zhaqing' | 'jieqing' | 'switch' | 'undo' | 'settle';
+  action: 'add' | 'subtract' | 'zhaqing' | 'jieqing' | 'switch' | 'undo' | 'settle' | 'win';
   description: string;
+  roundTime: string;
 }
 
 const operationRecords = ref<OperationRecord[]>([]);
@@ -284,11 +405,21 @@ const showRecordsModal = ref(false);
 function addOperationRecord(action: OperationRecord['action'], description: string) {
   const now = new Date();
   const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+  
+  let roundTimeStr = '--:--';
+  if (lastRoundStartTime.value > 0) {
+    const roundElapsed = Math.floor((Date.now() - lastRoundStartTime.value) / 1000);
+    const roundMins = Math.floor(roundElapsed / 60);
+    const roundSecs = roundElapsed % 60;
+    roundTimeStr = `${roundMins.toString().padStart(2, '0')}:${roundSecs.toString().padStart(2, '0')}`;
+  }
+  
   operationRecords.value.unshift({
     id: ++recordId,
     time: timeStr,
     action,
     description,
+    roundTime: roundTimeStr,
   });
   if (operationRecords.value.length > 100) {
     operationRecords.value.pop();
@@ -297,6 +428,11 @@ function addOperationRecord(action: OperationRecord['action'], description: stri
 
 function showFullRecords() {
   showRecordsModal.value = true;
+}
+
+function handleShowFullRecords() {
+  showRecordsModal.value = true;
+  resetHideTimer();
 }
 
 function closeRecordsModal() {
@@ -310,6 +446,7 @@ let timerInterval: number | null = null;
 function checkOrientation() {
   const sysInfo = uni.getSystemInfoSync();
   isLandscape.value = sysInfo.windowWidth > sysInfo.windowHeight;
+  screenHeight.value = sysInfo.windowHeight;
 }
 
 function handleResize() {
@@ -364,6 +501,7 @@ onMounted(() => {
     });
   }
   players.value = initialPlayers;
+  lastRoundStartTime.value = Date.now();
 
   if (gameMode.value === 'simple' || gameMode.value === 'rounds') {
     showTimer.value = true;
@@ -395,6 +533,7 @@ function startElapsedTimer() {
   timerInterval = setInterval(() => {
     elapsedTime.value++;
   }, 1000) as unknown as number;
+  isTimerRunning.value = true;
 }
 
 function stopTimer() {
@@ -402,6 +541,7 @@ function stopTimer() {
     clearInterval(timerInterval);
     timerInterval = null;
   }
+  isTimerRunning.value = false;
 }
 
 function handleTimeUp() {
@@ -535,7 +675,7 @@ function handleAddScore(playerIndex: number) {
   players.value[playerIndex].score++;
   addOperationRecord('add', `${players.value[playerIndex].name} +1分`);
 
-  if (gameMode.value === 'rounds' && players.value[playerIndex].score >= winRounds.value) {
+  if (players.value[playerIndex].score >= winRounds.value) {
     handleRoundWin(playerIndex);
   }
 }
@@ -554,7 +694,7 @@ function handleAddZhaQing(playerIndex: number) {
   players.value[playerIndex].score++;
   addOperationRecord('zhaqing', `${players.value[playerIndex].name} 炸清 +1分`);
 
-  if (gameMode.value === 'rounds' && players.value[playerIndex].score >= winRounds.value) {
+  if (players.value[playerIndex].score >= winRounds.value) {
     handleRoundWin(playerIndex);
   }
 }
@@ -565,7 +705,7 @@ function handleAddJieQing(playerIndex: number) {
   players.value[playerIndex].score++;
   addOperationRecord('jieqing', `${players.value[playerIndex].name} 接清 +1分`);
 
-  if (gameMode.value === 'rounds' && players.value[playerIndex].score >= winRounds.value) {
+  if (players.value[playerIndex].score >= winRounds.value) {
     handleRoundWin(playerIndex);
   }
 }
@@ -573,27 +713,45 @@ function handleAddJieQing(playerIndex: number) {
 function handleRoundWin(playerIndex: number) {
   players.value[playerIndex].wins++;
   lastRoundStartTime.value = Date.now();
-
-  if (gameMode.value === 'rounds') {
-    checkGameEnd();
-  }
+  checkGameEnd(playerIndex);
 }
 
-function checkGameEnd() {
-  const playersWithWins = players.value.filter((p) => p.wins >= winRounds.value);
-  if (playersWithWins.length > 0) {
+function checkGameEnd(playerIndex: number) {
+  const player = players.value[playerIndex];
+  if (player.score >= winRounds.value) {
     isGameEnded.value = true;
+    addOperationRecord('win', `${player.name} 赢得比赛！(${winRounds.value}局${player.score}胜)`);
+    
+    const lastScores = players.value.map(p => p.score);
+    const winnerIndex = lastScores[0] > lastScores[1] ? 0 : 1;
+    const currentPlayer1Wins = matchHistory.value.length > 0 ? matchHistory.value[matchHistory.value.length - 1].player1Wins : 0;
+    const currentPlayer2Wins = matchHistory.value.length > 0 ? matchHistory.value[matchHistory.value.length - 1].player2Wins : 0;
+    
+    matchHistory.value.push({
+      round: matchHistory.value.length + 1,
+      player1Score: players.value[0].score,
+      player2Score: players.value[1].score,
+      player1ZhaQing: players.value[0].zhaQing,
+      player1JieQing: players.value[0].jieQing,
+      player2ZhaQing: players.value[1].zhaQing,
+      player2JieQing: players.value[1].jieQing,
+      player1Wins: winnerIndex === 0 ? currentPlayer1Wins + 1 : currentPlayer1Wins,
+      player2Wins: winnerIndex === 1 ? currentPlayer2Wins + 1 : currentPlayer2Wins
+    });
+    
+    hasRestarted.value = true;
+    
     uni.showModal({
       title: '🎉 比赛结束！',
-      content: `${playersWithWins[0].name} 赢得了比赛！`,
+      content: `${player.name} 赢得了比赛！`,
       confirmText: '查看结算',
-      showCancel: false,
+      cancelText: '重新开始',
       confirmColor: '#cc7000',
       success: (res) => {
         if (res.confirm) {
-          saveMatchRecord();
-          showActions.value = false;
-          showHeader.value = false;
+          showSettleModal.value = true;
+        } else {
+          resetMatch();
         }
       },
     });
@@ -601,23 +759,42 @@ function checkGameEnd() {
 }
 
 function handleSettle() {
-  const content = players.value
-    .map((p) => `${p.name}: ${p.score}分 (炸清${p.zhaQing}次,接清${p.jieQing}次)`)
-    .join('\n');
+  showSettleModal.value = true;
+}
 
-  uni.showModal({
-    title: '确认结算',
-    content: content + '\n\n确认结束本局比赛?',
-    confirmText: '确认结算',
-    cancelText: '继续比赛',
-    confirmColor: '#cc7000',
-    success: (res) => {
-      if (res.confirm) {
-        saveMatchRecord();
-        uni.redirectTo({ url: '/pages/index/index' });
-      }
-    },
+function confirmSettle() {
+  saveMatchRecord();
+  showSettleModal.value = false;
+  uni.redirectTo({ url: '/pages/index/index' });
+}
+
+function cancelSettle() {
+  showSettleModal.value = false;
+}
+
+function handleRestart() {
+  showSettleModal.value = false;
+  setTimeout(() => {
+    resetMatch();
+  }, 100);
+}
+
+function resetMatch() {
+  const lastScores = players.value.map(p => p.score);
+  
+  showSettleModal.value = false;
+  players.value.forEach((player) => {
+    player.score = 0;
+    player.zhaQing = 0;
+    player.jieQing = 0;
+    player.wins = 0;
   });
+  currentPlayer.value = 0;
+  historyStack.value = [];
+  lastRoundStartTime.value = Date.now();
+  isGameEnded.value = false;
+  addOperationRecord('settle', `${players.value[0].name} ${lastScores[0]}:${lastScores[1]} ${players.value[1].name}`);
+  addOperationRecord('settle', '重新开始新一局抢7');
 }
 
 function formatTime(seconds: number): string {
@@ -868,12 +1045,13 @@ function resetHideTimer() {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 16rpx;
   overflow: hidden;
-  border: 3rpx solid transparent;
+  border: 3rpx solid rgba(255, 255, 255, 0.15);
   transition: all 0.3s ease;
 
   &.active {
-    border-color: #cc7000;
-    box-shadow: 0 0 20rpx rgba(204, 112, 0, 0.3);
+    border-color: #ff8c00;
+    box-shadow: 0 0 20rpx rgba(255, 140, 0, 0.5), 0 0 40rpx rgba(255, 140, 0, 0.3);
+    background: rgba(255, 140, 0, 0.08);
   }
 }
 
@@ -882,6 +1060,8 @@ function resetHideTimer() {
   align-items: center;
   justify-content: space-between;
   padding: 14rpx 18rpx;
+  width: 100%;
+  box-sizing: border-box;
 
   &-player1 {
     background: #1a70cc;
@@ -956,9 +1136,10 @@ function resetHideTimer() {
 .layout-landscape {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 8rpx;
   padding: 10rpx;
-  height: 100vh;
+  min-height: 100vh;
+  max-height: 100vh;
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -967,10 +1148,9 @@ function resetHideTimer() {
   display: flex;
   flex-direction: row;
   align-items: stretch;
-  gap: 10rpx;
+  gap: 8rpx;
   flex: 1;
-  min-height: 0;
-  max-height: calc(100vh - 140rpx);
+  min-height: 205rpx;
 }
 
 .landscape-player-card {
@@ -978,6 +1158,149 @@ function resetHideTimer() {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  padding: 0;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+
+.landscape-player-card .portrait-header {
+  padding: 8rpx 12rpx;
+  margin-top: -2rpx;
+}
+
+.landscape-player-card .portrait-player-name {
+  font-size: 24rpx;
+  font-weight: bold;
+}
+
+.landscape-player-card .portrait-score-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.landscape-player-card .portrait-score {
+  font-size: 56rpx;
+  font-weight: bold;
+  color: #ff8c00;
+  text-shadow: 0 0 20rpx rgba(255, 140, 0, 0.5);
+}
+
+.landscape-player-card .portrait-stats-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8rpx;
+  padding: 4rpx 0;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.1);
+  line-height: 1.2;
+}
+
+.landscape-player-card .stat-num {
+  font-size: 16rpx;
+  color: #ff8c00;
+  font-weight: bold;
+}
+
+.landscape-player-card .stat-label {
+  font-size: 14rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.landscape-player-card .stat-divider {
+  font-size: 14rpx;
+  color: rgba(255, 255, 255, 0.3);
+  margin: 0 8rpx;
+}
+
+.landscape-player-card .current-indicator {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  font-size: 18rpx;
+  color: #fff;
+}
+
+
+
+.landscape-timer-info {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.timer-value {
+  font-size: 20rpx;
+  font-weight: bold;
+  color: #ff8c00;
+  font-family: 'Courier New', monospace;
+}
+
+.round-value {
+  font-size: 16rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.timer-btn {
+  padding: 4rpx 12rpx;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6rpx;
+  font-size: 14rpx;
+  color: rgba(255, 255, 255, 0.8);
+  transition: all 0.2s ease;
+
+  &.active {
+    background: rgba(255, 140, 0, 0.3);
+    color: #ff8c00;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.landscape-bottom-area {
+  display: flex;
+  flex-direction: column;
+  background: rgba(26, 26, 46, 0.95);
+  padding: 6rpx 10rpx;
+  border-radius: 12rpx;
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+  gap: 4rpx;
+}
+
+.landscape-bottom-area .action-btn-wrap {
+  display: flex;
+  gap: 8rpx;
+  width: 100%;
+}
+
+.landscape-bottom-area .bottom-btn {
+  flex: 1;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8rpx;
+  transition: all 0.2s ease;
+
+  text {
+    font-size: 18rpx;
+    font-weight: bold;
+    color: #fff;
+  }
+}
+
+.landscape-timer-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rpx 4rpx;
+  border-top: none;
+  min-height: 16rpx;
 }
 
 .landscape-center-area {
@@ -1006,6 +1329,36 @@ function resetHideTimer() {
 .landscape-info-text {
   color: rgba(255, 255, 255, 0.8);
   font-size: 24rpx;
+}
+
+.match-score-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8rpx;
+  padding: 10rpx 14rpx;
+  background: rgba(26, 26, 46, 0.95);
+  border-radius: 12rpx;
+  margin: 6rpx 8rpx;
+  border: 1rpx solid rgba(255, 140, 0, 0.2);
+}
+
+.score-player {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+}
+
+.score-value {
+  font-size: 28rpx;
+  color: #ff8c00;
+  font-weight: bold;
+}
+
+.score-divider {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: bold;
 }
 
 .operation-records-section {
@@ -1088,6 +1441,15 @@ function resetHideTimer() {
   flex-shrink: 0;
 }
 
+.record-round-time {
+  color: #ff8c00;
+  font-size: 20rpx;
+  flex-shrink: 0;
+  padding: 0 8rpx;
+  background: rgba(255, 140, 0, 0.15);
+  border-radius: 6rpx;
+}
+
 .record-desc {
   color: #fff;
   font-size: 24rpx;
@@ -1101,6 +1463,216 @@ function resetHideTimer() {
   text {
     color: rgba(255, 255, 255, 0.4);
     font-size: 24rpx;
+  }
+}
+
+.settle-modal {
+  width: 600rpx;
+  max-height: 80vh;
+  background: rgba(26, 26, 46, 0.98);
+  border-radius: 20rpx;
+  border: 2rpx solid rgba(255, 140, 0, 0.3);
+  overflow: hidden;
+}
+
+.settle-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 32rpx;
+  border-bottom: 1rpx solid rgba(255, 255, 255, 0.1);
+}
+
+.settle-modal-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #fff;
+}
+
+.settle-modal-close {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 28rpx;
+}
+
+.settle-content {
+  padding: 24rpx 32rpx;
+}
+
+.settle-section {
+  margin-bottom: 24rpx;
+}
+
+.settle-section:last-child {
+  margin-bottom: 0;
+}
+
+.settle-section-title {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 16rpx;
+  display: block;
+}
+
+.settle-score-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.settle-player-name {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.settle-player-score {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #fff;
+
+  &.orange {
+    color: #ff8c00;
+  }
+}
+
+.settle-divider {
+  font-size: 32rpx;
+  color: rgba(255, 255, 255, 0.3);
+  font-weight: bold;
+}
+
+.settle-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16rpx;
+}
+
+.settle-stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12rpx;
+}
+
+.settle-stat-label {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.settle-stat-value {
+  font-size: 24rpx;
+  color: #ff8c00;
+  font-weight: bold;
+}
+
+.round-history {
+  max-height: 500rpx;
+  margin-top: 16rpx;
+}
+
+.round-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12rpx;
+  padding: 16rpx;
+  margin-bottom: 12rpx;
+}
+
+.round-header {
+  margin-bottom: 12rpx;
+}
+
+.round-title {
+  font-size: 22rpx;
+  color: #ff8c00;
+  font-weight: bold;
+}
+
+.round-score-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8rpx;
+  margin-bottom: 12rpx;
+}
+
+.round-player-name {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.round-player-score {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #ff8c00;
+}
+
+.round-divider {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.round-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12rpx;
+}
+
+.round-stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10rpx 12rpx;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8rpx;
+}
+
+.round-stat-label {
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.round-stat-value {
+  font-size: 22rpx;
+  color: #ff8c00;
+  font-weight: bold;
+}
+
+.empty-rounds {
+  text-align: center;
+  padding: 30rpx 0;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 24rpx;
+}
+
+.settle-modal-footer {
+  display: flex;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.1);
+}
+
+.settle-btn {
+  flex: 1;
+  padding: 28rpx;
+  text-align: center;
+  font-size: 28rpx;
+  font-weight: 500;
+  border-radius: 12rpx;
+  margin: 0 8rpx;
+
+  &.cancel-btn {
+    color: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  &.confirm-btn {
+    color: #fff;
+    background: #9c27b0;
   }
 }
 
@@ -1124,16 +1696,18 @@ function resetHideTimer() {
 
 .action-btn-wrap {
   display: flex;
-  gap: 8rpx;
+  gap: 6rpx;
+  padding: 0 4rpx;
 }
 
 .bottom-btn {
   flex: 1;
+  flex-basis: 0;
   height: 60rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12rpx;
+  border-radius: 10rpx;
   transition: all 0.2s ease;
 
   &:active {
@@ -1147,12 +1721,12 @@ function resetHideTimer() {
     color: #fff;
   }
 
-  &.plus-btn {
-    background: #3d964d;
+  &.undo-btn {
+    background: #757575;
   }
 
-  &.minus-btn {
-    background: #c62828;
+  &.plus-btn {
+    background: #558b2f;
   }
 
   &.zhaqing-btn {
@@ -1163,31 +1737,10 @@ function resetHideTimer() {
     background: #4caf50;
   }
 
-  &.undo-btn {
-    background: #9e9e9e;
-  }
-
   &.settle-btn {
     background: #9c27b0;
-  }
-}
-
-.landscape-bottom-actions {
-  padding: 8rpx 12rpx;
-  background: rgba(26, 26, 46, 0.95);
-  border-radius: 12rpx;
-  margin-top: auto;
-}
-
-.landscape-action-wrap {
-  gap: 6rpx;
-}
-
-.landscape-action-wrap .bottom-btn {
-  height: 48rpx;
-
-  text {
-    font-size: 18rpx;
+    padding: 0;
+    margin: 0;
   }
 }
 

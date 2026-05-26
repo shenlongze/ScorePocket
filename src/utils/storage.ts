@@ -1,11 +1,12 @@
 import type { MatchConfig, Player, ActionRecord, GameState } from '@/data/types';
 import { DEFAULT_CONFIG } from '@/data/types';
+import { formatTime, generateId } from './common';
 
 const STORAGE_KEYS = {
   CONFIG: 'nineball_config',
   GAME_STATE: 'nineball_game_state',
   PLAYERS: 'nineball_players',
-  RECORDS: 'nineball_records'
+  RECORDS: 'nineball_records',
 };
 
 export function saveConfig(config: MatchConfig): void {
@@ -78,19 +79,10 @@ export function initPlayers(config: MatchConfig): Player[] {
       normalWin: 0,
       bigGolden: 0,
       smallGolden: 0,
-      goldenNine: 0
+      goldenNine: 0,
     },
-    currentStreak: 0
+    currentStreak: 0,
   }));
 }
 
-export function generateRecordId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2);
-}
-
-export function formatTime(seconds: number): string {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
-  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-}
+export { formatTime, generateId as generateRecordId } from './common';

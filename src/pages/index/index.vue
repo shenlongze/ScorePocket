@@ -12,42 +12,42 @@
         <text class="nickname">{{ userInfo.nickname }}</text>
       </view>
     </view>
-    
+
     <view class="main-content">
       <view class="game-modes">
         <text class="section-title">选择玩法</text>
-        
+
         <view class="mode-grid">
           <view class="mode-card" @tap="startGame('中式八球')">
             <view class="mode-icon">🎱</view>
             <text class="mode-name">中式八球</text>
             <text class="mode-desc">国标黑八</text>
           </view>
-          
+
           <view class="mode-card" @tap="startGame('九球')">
             <view class="mode-icon">9️⃣</view>
             <text class="mode-name">九球</text>
             <text class="mode-desc">按序击打</text>
           </view>
-          
+
           <view class="mode-card" @tap="startGame('六球')">
             <view class="mode-icon">🔶</view>
             <text class="mode-name">六球</text>
             <text class="mode-desc">快速对决</text>
           </view>
-          
+
           <view class="mode-card" @tap="startGame('斯诺克')">
             <view class="mode-icon">🔴</view>
             <text class="mode-name">斯诺克</text>
             <text class="mode-desc">会员专属</text>
           </view>
-          
+
           <view class="mode-card" @tap="startZambo">
             <view class="mode-icon">🤝</view>
             <text class="mode-name">抓迷糊</text>
             <text class="mode-desc">多人混战</text>
           </view>
-          
+
           <view class="mode-card" @tap="startGame('自定义')">
             <view class="mode-icon">⚙️</view>
             <text class="mode-name">自定义</text>
@@ -55,7 +55,7 @@
           </view>
         </view>
       </view>
-      
+
       <view class="quick-actions">
         <view class="action-card" @tap="goToTournament">
           <view class="action-icon">🏆</view>
@@ -64,7 +64,7 @@
             <text class="action-desc">组织线下比赛</text>
           </view>
         </view>
-        
+
         <view class="action-card" @tap="goToRecords">
           <view class="action-icon">📊</view>
           <view class="action-content">
@@ -78,53 +78,53 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { getUserInfo } from '@/utils/auth'
+import { ref, onMounted } from 'vue';
+import { getUserInfo } from '@/utils/auth';
 
-const userInfo = ref({ nickname: '游客', avatar: '' })
+const userInfo = ref({ nickname: '游客', avatar: '' });
 
 onMounted(() => {
-  userInfo.value = getUserInfo()
-})
+  userInfo.value = getUserInfo();
+});
 
 function goToProfile() {
-  uni.switchTab({ url: '/pages/profile/index' })
+  uni.switchTab({ url: '/pages/profile/index' });
 }
 
 function startGame(gameType: string) {
   if (gameType === '中式八球') {
-    uni.navigateTo({ url: '/pages/game/mode-select/index' })
-    return
+    uni.navigateTo({ url: '/pages/game/mode-select/index' });
+    return;
   }
-  
+
   if (gameType === '九球' || gameType === '六球') {
-    uni.navigateTo({ url: `/pages/game/nineball/config?gameType=${gameType}` })
-    return
+    uni.navigateTo({ url: `/pages/game/nineball/config?gameType=${gameType}` });
+    return;
   }
-  
+
   if (gameType === '斯诺克') {
-    uni.navigateTo({ url: '/pages/game/snooker/config' })
-    return
+    uni.navigateTo({ url: '/pages/game/snooker/config' });
+    return;
   }
-  
+
   if (gameType === '自定义') {
-    uni.navigateTo({ url: '/pages/coming-soon/index?type=custom' })
-    return
+    uni.navigateTo({ url: '/pages/coming-soon/index?type=custom' });
+    return;
   }
-  
-  uni.navigateTo({ url: `/pages/game/onevone/index?gameType=${encodeURIComponent(gameType)}` })
+
+  uni.navigateTo({ url: `/pages/game/onevone/index?gameType=${encodeURIComponent(gameType)}` });
 }
 
 function startZambo() {
-  uni.navigateTo({ url: '/pages/coming-soon/index?type=chaos' })
+  uni.navigateTo({ url: '/pages/coming-soon/index?type=chaos' });
 }
 
 function goToTournament() {
-  uni.navigateTo({ url: '/pages/coming-soon/index?type=tournament' })
+  uni.navigateTo({ url: '/pages/coming-soon/index?type=tournament' });
 }
 
 function goToRecords() {
-  uni.navigateTo({ url: '/pages/coming-soon/index?type=match' })
+  uni.navigateTo({ url: '/pages/coming-soon/index?type=match' });
 }
 </script>
 

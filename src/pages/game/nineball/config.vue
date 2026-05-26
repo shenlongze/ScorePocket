@@ -11,12 +11,12 @@
     <scroll-view scroll-y class="config-scroll">
       <view class="config-section">
         <view class="section-title">基础设置</view>
-        
+
         <view class="config-item">
           <text class="item-label">目标球数</text>
           <view class="ball-selector">
-            <view 
-              v-for="ball in ballOptions" 
+            <view
+              v-for="ball in ballOptions"
               :key="ball"
               :class="['ball-option', { active: config.targetBalls === ball }]"
               @tap="config.targetBalls = ball"
@@ -30,9 +30,9 @@
           <text class="item-label">比赛人数</text>
           <view class="number-input-group">
             <view class="number-btn" @tap="decreasePlayerCount">-</view>
-            <input 
-              type="number" 
-              class="number-input" 
+            <input
+              type="number"
+              class="number-input"
               v-model="config.playerCount"
               @blur="validatePlayerCount"
             />
@@ -45,9 +45,9 @@
           <view class="player-names">
             <view v-for="(name, index) in config.playerNames" :key="index" class="name-input-item">
               <text class="name-label">选手{{ index + 1 }}</text>
-              <input 
-                type="text" 
-                class="name-input" 
+              <input
+                type="text"
+                class="name-input"
                 v-model="config.playerNames[index]"
                 :placeholder="`玩家${index + 1}`"
               />
@@ -57,114 +57,98 @@
 
         <view class="config-item">
           <text class="item-label">基础分数</text>
-          <input 
-            type="number" 
-            class="value-input" 
-            v-model="config.baseScore"
-          />
+          <input type="number" class="value-input" v-model="config.baseScore" />
         </view>
       </view>
 
       <view class="config-section">
         <view class="section-title">得分设置</view>
-        
+
         <view class="config-item">
           <text class="item-label">普胜</text>
-          <input 
-            type="number" 
-            class="value-input" 
-            v-model="config.scoreSettings.normalWin"
-          />
+          <input type="number" class="value-input" v-model="config.scoreSettings.normalWin" />
           <text class="item-unit">分</text>
         </view>
 
         <view class="config-item">
           <text class="item-label">小金</text>
           <view class="radio-group">
-            <view 
+            <view
               :class="['radio-btn', { active: config.smallGoldenScope === 'prev' }]"
               @tap="config.smallGoldenScope = 'prev'"
-            >上家</view>
-            <view 
+              >上家</view
+            >
+            <view
               :class="['radio-btn', { active: config.smallGoldenScope === 'all' }]"
               @tap="config.smallGoldenScope = 'all'"
-            >全场</view>
+              >全场</view
+            >
           </view>
-          <input 
-            type="number" 
-            class="value-input" 
-            v-model="config.scoreSettings.smallGolden"
-          />
+          <input type="number" class="value-input" v-model="config.scoreSettings.smallGolden" />
           <text class="item-unit">分</text>
         </view>
 
         <view class="config-item">
           <text class="item-label">大金</text>
           <view class="radio-group">
-            <view 
+            <view
               :class="['radio-btn', { active: config.bigGoldenScope === 'prev' }]"
               @tap="config.bigGoldenScope = 'prev'"
-            >上家</view>
-            <view 
+              >上家</view
+            >
+            <view
               :class="['radio-btn', { active: config.bigGoldenScope === 'all' }]"
               @tap="config.bigGoldenScope = 'all'"
-            >全场</view>
+              >全场</view
+            >
           </view>
-          <input 
-            type="number" 
-            class="value-input" 
-            v-model="config.scoreSettings.bigGolden"
-          />
+          <input type="number" class="value-input" v-model="config.scoreSettings.bigGolden" />
           <text class="item-unit">分</text>
         </view>
 
         <view class="config-item">
           <text class="item-label">黄金九</text>
           <view class="radio-group">
-            <view 
+            <view
               :class="['radio-btn', { active: config.goldenNineScope === 'prev' }]"
               @tap="config.goldenNineScope = 'prev'"
-            >上家</view>
-            <view 
+              >上家</view
+            >
+            <view
               :class="['radio-btn', { active: config.goldenNineScope === 'all' }]"
               @tap="config.goldenNineScope = 'all'"
-            >全场</view>
+              >全场</view
+            >
           </view>
-          <input 
-            type="number" 
-            class="value-input" 
-            v-model="config.scoreSettings.goldenNine"
-          />
+          <input type="number" class="value-input" v-model="config.scoreSettings.goldenNine" />
           <text class="item-unit">分</text>
         </view>
         <view class="config-item">
           <text class="item-label">犯规</text>
           <view class="radio-group">
-            <view 
+            <view
               :class="['radio-btn', { active: config.foulScope === 'prev' }]"
               @tap="config.foulScope = 'prev'"
-            >上家</view>
-            <view 
+              >上家</view
+            >
+            <view
               :class="['radio-btn', { active: config.foulScope === 'all' }]"
               @tap="config.foulScope = 'all'"
-            >全场</view>
+              >全场</view
+            >
           </view>
-          <input 
-            type="number" 
-            class="value-input" 
-            v-model="config.scoreSettings.foul"
-          />
+          <input type="number" class="value-input" v-model="config.scoreSettings.foul" />
           <text class="item-unit">分</text>
         </view>
       </view>
 
       <view class="config-section">
         <view class="section-title">半彩(链)</view>
-        
+
         <view class="config-item">
           <text class="item-label">半彩</text>
-          <switch 
-            :checked="config.chainEnabled" 
+          <switch
+            :checked="config.chainEnabled"
             @change="config.chainEnabled = !config.chainEnabled"
           />
         </view>
@@ -172,20 +156,16 @@
         <view v-if="config.chainEnabled" class="chain-settings">
           <view class="config-item">
             <text class="item-label">连续进球数</text>
-            <input 
-              type="number" 
-              class="value-input" 
+            <input
+              type="number"
+              class="value-input"
               v-model="config.chainSettings.requiredStreak"
             />
             <text class="item-unit">球</text>
           </view>
           <view class="config-item">
             <text class="item-label">附加分值</text>
-            <input 
-              type="number" 
-              class="value-input" 
-              v-model="config.chainSettings.bonusPoints"
-            />
+            <input type="number" class="value-input" v-model="config.chainSettings.bonusPoints" />
             <text class="item-unit">分</text>
           </view>
         </view>
@@ -193,45 +173,36 @@
 
       <view class="config-section">
         <view class="section-title">点（倍数）</view>
-        
+
         <view class="config-item">
           <text class="item-label">倍数</text>
-          <switch 
-            :checked="config.multiplierEnabled" 
+          <switch
+            :checked="config.multiplierEnabled"
             @change="config.multiplierEnabled = !config.multiplierEnabled"
           />
         </view>
 
         <view v-if="config.multiplierEnabled" class="config-item">
           <text class="item-label">倍数</text>
-          <input 
-            type="number" 
-            class="value-input" 
-            v-model="config.multiplier"
-          />
+          <input type="number" class="value-input" v-model="config.multiplier" />
           <text class="item-unit">倍</text>
         </view>
       </view>
 
       <view class="config-section">
         <view class="section-title">时间与局数</view>
-        
+
         <view class="config-item">
           <text class="item-label">比赛时间</text>
-          <input 
-            type="number" 
-            class="value-input" 
-            v-model="gameTimeMinutes"
-            placeholder="不限制"
-          />
+          <input type="number" class="value-input" v-model="gameTimeMinutes" placeholder="不限制" />
           <text class="item-unit">分钟</text>
         </view>
 
         <view class="config-item">
           <text class="item-label">比赛局数</text>
-          <input 
-            type="number" 
-            class="value-input" 
+          <input
+            type="number"
+            class="value-input"
             v-model="config.gameRounds"
             placeholder="不限制"
           />
@@ -240,6 +211,7 @@
       </view>
     </scroll-view>
 
+    <view class="continue-btn" @tap="continueGame" v-if="hasGameState">继续比赛</view>
     <view class="start-btn" @tap="startGame">开始比赛</view>
   </view>
 </template>
@@ -248,35 +220,52 @@
 import { ref, watch, onMounted } from 'vue';
 import type { MatchConfig } from '@/data/types';
 import { DEFAULT_CONFIG } from '@/data/types';
-import { saveConfig, loadConfig, initPlayers, savePlayers, clearAllGameData } from '@/utils/storage';
+import {
+  saveConfig,
+  loadConfig,
+  initPlayers,
+  savePlayers,
+  clearAllGameData,
+} from '@/utils/storage';
 import { initPlayOrder } from '@/utils/gameLogic';
 
 const ballOptions = [4, 5, 6, 7, 8, 9];
 
 const config = ref<MatchConfig>({ ...DEFAULT_CONFIG });
 const gameTimeMinutes = ref('');
+const hasGameState = ref(false);
 
 onMounted(() => {
   config.value = { ...DEFAULT_CONFIG };
-  
+
   const pages = getCurrentPages();
   const currentPage = pages[pages.length - 1];
   const options = (currentPage as any)?.options || {};
-  
+
   if (options.gameType === '六球') {
     config.value.targetBalls = 6;
   }
+
+  const gameState = uni.getStorageSync('nineball_game_state');
+  hasGameState.value = !!gameState && gameState.players && gameState.players.length > 0;
 });
 
-watch(() => config.value.playerCount, (newCount, oldCount) => {
-  const names = config.value.playerNames;
-  while (names.length < newCount) {
-    names.push(`玩家${names.length + 1}`);
+function continueGame() {
+  uni.navigateBack();
+}
+
+watch(
+  () => config.value.playerCount,
+  (newCount, oldCount) => {
+    const names = config.value.playerNames;
+    while (names.length < newCount) {
+      names.push(`玩家${names.length + 1}`);
+    }
+    while (names.length > newCount) {
+      names.pop();
+    }
   }
-  while (names.length > newCount) {
-    names.pop();
-  }
-});
+);
 
 function goBack() {
   uni.navigateBack();
@@ -308,11 +297,11 @@ function validateAndSaveConfig() {
   } else {
     config.value.gameTime = null;
   }
-  
+
   if (!config.value.gameRounds || config.value.gameRounds <= 0) {
     config.value.gameRounds = null;
   }
-  
+
   saveConfig(config.value);
   uni.showToast({ title: '配置已保存', icon: 'success' });
 }
@@ -323,31 +312,34 @@ function startGame() {
   } else {
     config.value.gameTime = null;
   }
-  
+
   if (!config.value.gameRounds || config.value.gameRounds <= 0) {
     config.value.gameRounds = null;
   }
-  
+
   clearAllGameData();
-  
+
   saveConfig(config.value);
   const players = initPlayers(config.value);
   savePlayers(players);
   initPlayOrder(config.value.playerCount);
-  
-  uni.setStorageSync('nineball_game_state', JSON.stringify({
-    config: config.value,
-    players,
-    records: [],
-    currentPlayerId: 1,
-    currentRound: 1,
-    completedRounds: 0,
-    playOrder: Array.from({ length: config.value.playerCount }, (_, i) => i + 1),
-    timerSeconds: config.value.gameTime || 0,
-    isCountdown: config.value.gameTime !== null,
-    isTimerRunning: false
-  }));
-  
+
+  uni.setStorageSync(
+    'nineball_game_state',
+    JSON.stringify({
+      config: config.value,
+      players,
+      records: [],
+      currentPlayerId: 1,
+      currentRound: 1,
+      completedRounds: 0,
+      playOrder: Array.from({ length: config.value.playerCount }, (_, i) => i + 1),
+      timerSeconds: config.value.gameTime || 0,
+      isCountdown: config.value.gameTime !== null,
+      isTimerRunning: false,
+    })
+  );
+
   uni.navigateTo({ url: '/pages/game/nineball/index' });
 }
 </script>
@@ -375,7 +367,7 @@ function startGame() {
   justify-content: center;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
-  
+
   text {
     color: #fff;
     font-size: 48rpx;
@@ -454,7 +446,7 @@ function startGame() {
   color: rgba(255, 255, 255, 0.7);
   font-size: 26rpx;
   transition: all 0.3s ease;
-  
+
   &.active {
     background: #4a9eff;
     color: #fff;
@@ -554,6 +546,23 @@ function startGame() {
   border-radius: 12rpx;
   padding: 15rpx;
   margin-top: 10rpx;
+}
+
+.continue-btn {
+  position: fixed;
+  bottom: 140rpx;
+  left: 30rpx;
+  right: 30rpx;
+  height: 100rpx;
+  background: rgba(74, 158, 255, 0.2);
+  border: 2rpx solid #4a9eff;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4a9eff;
+  font-size: 30rpx;
+  font-weight: bold;
 }
 
 .start-btn {

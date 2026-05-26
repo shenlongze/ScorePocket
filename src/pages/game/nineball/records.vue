@@ -58,7 +58,7 @@ function getTypeLabel(type: string): string {
     bigGolden: '大金',
     smallGolden: '小金',
     goldenNine: '黄金九',
-    bonus: '伴彩'
+    bonus: '伴彩',
   };
   return labels[type] || type;
 }
@@ -73,7 +73,7 @@ function clearRecords() {
         records.value = [];
         uni.showToast({ title: '已清空', icon: 'success' });
       }
-    }
+    },
   });
 }
 </script>
@@ -100,7 +100,7 @@ function clearRecords() {
   justify-content: center;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
-  
+
   text {
     color: #fff;
     font-size: 48rpx;
@@ -176,32 +176,32 @@ function clearRecords() {
   font-size: 22rpx;
   font-weight: bold;
   flex-shrink: 0;
-  
+
   &.foul {
     background: rgba(255, 107, 107, 0.2);
     color: #ff6b6b;
   }
-  
+
   &.normalWin {
     background: rgba(74, 217, 100, 0.2);
     color: #4ad964;
   }
-  
+
   &.bigGolden {
     background: rgba(255, 215, 0, 0.2);
     color: #ffd700;
   }
-  
+
   &.smallGolden {
     background: rgba(192, 192, 192, 0.2);
     color: #c0c0c0;
   }
-  
+
   &.goldenNine {
     background: rgba(255, 165, 0, 0.2);
     color: #ffa500;
   }
-  
+
   &.bonus {
     background: rgba(147, 112, 219, 0.2);
     color: #9370db;

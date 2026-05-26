@@ -6,7 +6,7 @@
         <text>+ 创建赛事</text>
       </view>
     </view>
-    
+
     <view class="tournament-list">
       <view v-if="tournaments.length === 0" class="empty-state">
         <text class="empty-icon">🏆</text>
@@ -15,18 +15,29 @@
           <text>创建第一个赛事</text>
         </view>
       </view>
-      
+
       <view v-for="tournament in tournaments" :key="tournament.id" class="tournament-card">
         <view class="tournament-header">
           <view class="tournament-status" :class="tournament.status">
-            {{ tournament.status === 'ongoing' ? '进行中' : tournament.status === 'finished' ? '已结束' : '待开始' }}
+            {{
+              tournament.status === 'ongoing'
+                ? '进行中'
+                : tournament.status === 'finished'
+                  ? '已结束'
+                  : '待开始'
+            }}
           </view>
-          <text class="tournament-type">{{ tournament.type === 'single' ? '单败淘汰' : '双败淘汰' }}</text>
+          <text class="tournament-type">{{
+            tournament.type === 'single' ? '单败淘汰' : '双败淘汰'
+          }}</text>
         </view>
-        
+
         <text class="tournament-name">{{ tournament.name }}</text>
-        <text class="tournament-desc">{{ tournament.gameType }} · 抢{{ tournament.bestOf }}局 · {{ tournament.players.length }}人</text>
-        
+        <text class="tournament-desc"
+          >{{ tournament.gameType }} · 抢{{ tournament.bestOf }}局 ·
+          {{ tournament.players.length }}人</text
+        >
+
         <view class="tournament-stats">
           <view class="stat">
             <text class="stat-value">{{ tournament.rounds }}</text>
@@ -41,12 +52,16 @@
             <text class="stat-label">选手</text>
           </view>
         </view>
-        
+
         <view class="tournament-actions">
           <view class="action-btn primary" @tap="viewBracket(tournament)">
             <text>{{ tournament.status === 'finished' ? '查看图谱' : '查看对阵' }}</text>
           </view>
-          <view v-if="tournament.status !== 'finished'" class="action-btn" @tap="joinTournament(tournament)">
+          <view
+            v-if="tournament.status !== 'finished'"
+            class="action-btn"
+            @tap="joinTournament(tournament)"
+          >
             <text>加入赛事</text>
           </view>
         </view>
@@ -56,12 +71,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import type { Tournament } from '@/utils/tournamentLogic'
+import { ref, onMounted } from 'vue';
+import type { Tournament } from '@/utils/tournamentLogic';
 
 onMounted(() => {
-  uni.redirectTo({ url: '/pages/coming-soon/index?type=tournament' })
-})
+  uni.redirectTo({ url: '/pages/coming-soon/index?type=tournament' });
+});
 
 const tournaments = ref<Tournament[]>([
   {
@@ -112,14 +127,14 @@ const tournaments = ref<Tournament[]>([
     status: 'finished',
     rounds: 4,
   },
-])
+]);
 
 function createTournament() {
-  uni.navigateTo({ url: '/pages/tournament/create' })
+  uni.navigateTo({ url: '/pages/tournament/create' });
 }
 
 function viewBracket(tournament: Tournament) {
-  uni.navigateTo({ url: `/pages/tournament/bracket?id=${tournament.id}` })
+  uni.navigateTo({ url: `/pages/tournament/bracket?id=${tournament.id}` });
 }
 
 function joinTournament(tournament: Tournament) {
@@ -128,10 +143,10 @@ function joinTournament(tournament: Tournament) {
     content: `确定加入「${tournament.name}」吗？`,
     success: (res) => {
       if (res.confirm) {
-        uni.showToast({ title: '已加入赛事', icon: 'success' })
+        uni.showToast({ title: '已加入赛事', icon: 'success' });
       }
-    }
-  })
+    },
+  });
 }
 </script>
 
@@ -159,7 +174,7 @@ function joinTournament(tournament: Tournament) {
   background: #4a9eff;
   padding: 15rpx 30rpx;
   border-radius: 30rpx;
-  
+
   text {
     color: #fff;
     font-size: 26rpx;
@@ -193,7 +208,7 @@ function joinTournament(tournament: Tournament) {
   background: #4a9eff;
   padding: 20rpx 60rpx;
   border-radius: 30rpx;
-  
+
   text {
     color: #fff;
     font-size: 28rpx;
@@ -219,17 +234,17 @@ function joinTournament(tournament: Tournament) {
   font-size: 22rpx;
   padding: 5rpx 15rpx;
   border-radius: 15rpx;
-  
+
   &.pending {
     background: rgba(255, 149, 0, 0.2);
     color: #ff9500;
   }
-  
+
   &.ongoing {
     background: rgba(74, 217, 100, 0.2);
     color: #4cd964;
   }
-  
+
   &.finished {
     background: rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.6);
@@ -293,11 +308,11 @@ function joinTournament(tournament: Tournament) {
   padding: 18rpx;
   border-radius: 30rpx;
   background: rgba(255, 255, 255, 0.1);
-  
+
   &.primary {
     background: #4a9eff;
   }
-  
+
   text {
     color: #fff;
     font-size: 26rpx;

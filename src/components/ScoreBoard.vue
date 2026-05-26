@@ -1,7 +1,7 @@
 <template>
   <view class="score-board" :class="getLayoutClass()">
-    <view 
-      v-for="player in players" 
+    <view
+      v-for="player in players"
       :key="player.id"
       :class="['player-card', { active: currentPlayerId === player.id }]"
       :style="{ '--player-color': playerColors[player.id - 1] }"
@@ -56,22 +56,21 @@ defineEmits<{
   switchPlayer: [playerIndex: number];
 }>();
 
-const playerColors = [
-  '#1a5276',
-  '#8b0000',
-  '#2d5a27',
-  '#8b7355',
-  '#4a235a'
-];
+const playerColors = ['#1a5276', '#8b0000', '#2d5a27', '#8b7355', '#4a235a'];
 
 function getLayoutClass(): string {
   const count = props.players.length;
   switch (count) {
-    case 2: return 'layout-2';
-    case 3: return 'layout-3';
-    case 4: return 'layout-4';
-    case 5: return 'layout-5';
-    default: return 'layout-2';
+    case 2:
+      return 'layout-2';
+    case 3:
+      return 'layout-3';
+    case 4:
+      return 'layout-4';
+    case 5:
+      return 'layout-5';
+    default:
+      return 'layout-2';
   }
 }
 </script>
@@ -79,34 +78,47 @@ function getLayoutClass(): string {
 <style lang="scss" scoped>
 .score-board {
   padding: 20rpx;
-  
+
   &.layout-2 {
     display: flex;
     gap: 15rpx;
-    .player-card { width: calc(50% - 8rpx); }
+    .player-card {
+      width: calc(50% - 8rpx);
+    }
   }
-  
+
   &.layout-3 {
     display: flex;
     flex-wrap: wrap;
     gap: 15rpx;
-    .player-card:nth-child(1), .player-card:nth-child(2) { width: calc(50% - 8rpx); }
-    .player-card:nth-child(3) { width: 100%; }
+    .player-card:nth-child(1),
+    .player-card:nth-child(2) {
+      width: calc(50% - 8rpx);
+    }
+    .player-card:nth-child(3) {
+      width: 100%;
+    }
   }
-  
+
   &.layout-4 {
     display: flex;
     flex-wrap: wrap;
     gap: 15rpx;
-    .player-card { width: calc(50% - 8rpx); }
+    .player-card {
+      width: calc(50% - 8rpx);
+    }
   }
-  
+
   &.layout-5 {
     display: flex;
     flex-wrap: wrap;
     gap: 15rpx;
-    .player-card:nth-child(-n+3) { width: calc(33.33% - 10rpx); }
-    .player-card:nth-child(n+4) { width: calc(50% - 8rpx); }
+    .player-card:nth-child(-n + 3) {
+      width: calc(33.33% - 10rpx);
+    }
+    .player-card:nth-child(n + 4) {
+      width: calc(50% - 8rpx);
+    }
   }
 }
 
@@ -116,7 +128,7 @@ function getLayoutClass(): string {
   overflow: hidden;
   border: 3rpx solid transparent;
   transition: all 0.3s ease;
-  
+
   &.active {
     border-color: #ff8c00;
     box-shadow: 0 0 20rpx rgba(255, 140, 0, 0.3);
@@ -128,7 +140,7 @@ function getLayoutClass(): string {
   align-items: center;
   justify-content: space-between;
   padding: 20rpx;
-  
+
   .player-name {
     color: #fff;
     font-size: 32rpx;

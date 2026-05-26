@@ -11,12 +11,12 @@
     <scroll-view scroll-y class="config-scroll">
       <view class="config-section">
         <view class="section-title">基础设置</view>
-        
+
         <view class="config-item">
           <text class="item-label">选手数量</text>
           <view class="player-count-selector">
-            <view 
-              v-for="count in [2, 3, 4]" 
+            <view
+              v-for="count in [2, 3, 4]"
               :key="count"
               :class="['count-option', { active: config.playerCount === count }]"
               @tap="setPlayerCount(count)"
@@ -28,9 +28,9 @@
 
         <view v-for="(_, index) in config.playerNames" :key="index" class="config-item">
           <text class="item-label">选手{{ index + 1 }}</text>
-          <input 
-            type="text" 
-            class="name-input" 
+          <input
+            type="text"
+            class="name-input"
             v-model="config.playerNames[index]"
             :placeholder="`选手${index + 1}`"
           />
@@ -39,60 +39,59 @@
 
       <view class="config-section">
         <view class="section-title">比赛设置</view>
-        
+
         <view class="config-item">
           <text class="item-label">比赛模式</text>
           <view class="radio-group">
-            <view 
+            <view
               :class="['radio-btn', { active: config.mode === 'frame' }]"
               @tap="config.mode = 'frame'"
-            >抢局赛</view>
-            <view 
+              >抢局赛</view
+            >
+            <view
               :class="['radio-btn', { active: config.mode === 'timed' }]"
               @tap="config.mode = 'timed'"
-            >计时赛</view>
+              >计时赛</view
+            >
           </view>
         </view>
-        
+
         <view v-if="config.mode === 'frame'" class="config-item">
           <text class="item-label">总局数</text>
-          <input 
-            type="number" 
-            class="value-input" 
-            v-model="gameRounds"
-            placeholder="请输入局数"
-          />
+          <input type="number" class="value-input" v-model="gameRounds" placeholder="请输入局数" />
           <text class="item-unit">局</text>
         </view>
         <view v-if="config.mode === 'frame' && gameRounds" class="config-item">
           <text class="item-label">胜利条件</text>
-          <text class="win-condition">{{ gameRounds }}局{{ Math.ceil(parseInt(gameRounds) / 2) }}胜</text>
+          <text class="win-condition"
+            >{{ gameRounds }}局{{ Math.ceil(parseInt(gameRounds) / 2) }}胜</text
+          >
         </view>
-        
+
         <view v-if="config.mode === 'timed'" class="config-item">
           <text class="item-label">比赛时长</text>
-          <input 
-            type="number" 
-            class="value-input" 
+          <input
+            type="number"
+            class="value-input"
             v-model="gameTimeMinutes"
             placeholder="请输入时长"
           />
           <text class="item-unit">分钟</text>
         </view>
-        
+
         <view class="config-item">
           <text class="item-label">犯规罚分</text>
-          <switch 
-            :checked="config.enableFoulPenalty" 
+          <switch
+            :checked="config.enableFoulPenalty"
             @change="config.enableFoulPenalty = !config.enableFoulPenalty"
             color="#ff8c00"
           />
         </view>
-        
+
         <view class="config-item">
           <text class="item-label">选手计时</text>
-          <switch 
-            :checked="config.enablePlayerTimer" 
+          <switch
+            :checked="config.enablePlayerTimer"
             @change="config.enablePlayerTimer = !config.enablePlayerTimer"
             color="#ff8c00"
           />
@@ -101,11 +100,11 @@
 
       <view class="config-section">
         <view class="section-title">功能开关</view>
-        
+
         <view class="config-item">
           <text class="item-label">单杆统计</text>
-          <switch 
-            :checked="config.enableBreakStats" 
+          <switch
+            :checked="config.enableBreakStats"
             @change="config.enableBreakStats = !config.enableBreakStats"
             color="#ff8c00"
           />
@@ -139,7 +138,7 @@ const config = reactive<SnookerConfig>({
   enableBreakStats: true,
   enableFoulPenalty: true,
   gameTimeMinutes: null,
-  enablePlayerTimer: false
+  enablePlayerTimer: false,
 });
 
 const gameRounds = ref('');
@@ -166,13 +165,13 @@ function validateAndSaveConfig() {
   } else {
     config.gameRounds = null;
   }
-  
+
   if (gameTimeMinutes.value) {
     config.gameTimeMinutes = parseInt(gameTimeMinutes.value);
   } else {
     config.gameTimeMinutes = null;
   }
-  
+
   uni.setStorageSync('snooker_config', JSON.stringify(config));
   uni.showToast({ title: '配置已保存', icon: 'success' });
 }
@@ -183,15 +182,15 @@ function startGame() {
   } else {
     config.gameRounds = null;
   }
-  
+
   if (gameTimeMinutes.value) {
     config.gameTimeMinutes = parseInt(gameTimeMinutes.value);
   } else {
     config.gameTimeMinutes = null;
   }
-  
+
   uni.setStorageSync('snooker_config', JSON.stringify(config));
-  
+
   uni.navigateTo({ url: '/pages/game/snooker/index' });
 }
 </script>
@@ -219,7 +218,7 @@ function startGame() {
   justify-content: center;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
-  
+
   text {
     color: #fff;
     font-size: 48rpx;
@@ -298,7 +297,7 @@ function startGame() {
   color: rgba(255, 255, 255, 0.7);
   font-size: 26rpx;
   transition: all 0.3s ease;
-  
+
   &.active {
     background: #ff8c00;
     color: #fff;

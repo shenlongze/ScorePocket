@@ -1,9 +1,10 @@
-const DEFAULT_BASE_URL = 'http://192.168.31.240:8080';
 const STORAGE_KEY_API_HOST = 'billiards_api_host';
+
+const ENV_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://192.168.31.240:8080';
 
 function getApiHost(): string {
   const stored = uni.getStorageSync(STORAGE_KEY_API_HOST);
-  const host = stored || DEFAULT_BASE_URL;
+  const host = stored || ENV_BASE_URL;
   console.log('[API] 当前API地址:', host);
   return host;
 }

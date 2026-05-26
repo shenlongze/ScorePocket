@@ -10,10 +10,10 @@ export interface MatchConfig {
     goldenNine: number;
     foul: number;
   };
-  smallGoldenScope: 'all' | 'prev';  // 小金计分范围：'all'全场扣分，'prev'仅上家扣分
-  bigGoldenScope: 'all' | 'prev';     // 大金计分范围：'all'全场扣分，'prev'仅上家扣分
-  goldenNineScope: 'all' | 'prev';    // 黄金九计分范围：'all'全场扣分，'prev'仅上家扣分
-  foulScope: 'all' | 'prev';          // 犯规计分范围：'all'全场扣分，'prev'仅上家扣分
+  smallGoldenScope: 'all' | 'prev'; // 小金计分范围：'all'全场扣分，'prev'仅上家扣分
+  bigGoldenScope: 'all' | 'prev'; // 大金计分范围：'all'全场扣分，'prev'仅上家扣分
+  goldenNineScope: 'all' | 'prev'; // 黄金九计分范围：'all'全场扣分，'prev'仅上家扣分
+  foulScope: 'all' | 'prev'; // 犯规计分范围：'all'全场扣分，'prev'仅上家扣分
   chainEnabled: boolean;
   chainSettings: {
     requiredStreak: number;
@@ -73,7 +73,7 @@ export const DEFAULT_CONFIG: MatchConfig = {
     smallGolden: 7,
     bigGolden: 10,
     goldenNine: 4,
-    foul: 1
+    foul: 1,
   },
   smallGoldenScope: 'prev',
   bigGoldenScope: 'all',
@@ -82,18 +82,12 @@ export const DEFAULT_CONFIG: MatchConfig = {
   chainEnabled: false,
   chainSettings: {
     requiredStreak: 5,
-    bonusPoints: 4
+    bonusPoints: 4,
   },
   multiplierEnabled: false,
   multiplier: 2,
   gameTime: null,
-  gameRounds: null
+  gameRounds: null,
 };
 
-export const PLAYER_COLORS = [
-  '#1a5276',
-  '#8b0000',
-  '#2d5a27',
-  '#8b7355',
-  '#4a235a'
-];
+export const PLAYER_COLORS = ['#1a5276', '#8b0000', '#2d5a27', '#8b7355', '#4a235a'];

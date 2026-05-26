@@ -17,7 +17,7 @@
     </view>
 
     <view class="players-section">
-      <view 
+      <view
         v-for="(player, index) in players"
         :key="index"
         :class="['player-card', { active: currentPlayer === index }]"
@@ -108,9 +108,9 @@
         </view>
       </view>
       <scroll-view class="records-list" scroll-y>
-        <view 
-          v-for="record in operationRecords" 
-          :key="record.id" 
+        <view
+          v-for="record in operationRecords"
+          :key="record.id"
           class="record-item"
           :class="record.action"
         >
@@ -132,7 +132,7 @@
         </view>
       </view>
       <view class="balls-grid">
-        <view 
+        <view
           class="ball-btn"
           :class="{ disabled: redBallsRemaining <= 0 || (lastHitWasRed && redBallsRemaining > 0) }"
           @tap="addScoreSafe(1)"
@@ -142,61 +142,37 @@
           <text class="ball-score">1分</text>
           <text v-if="redBallsRemaining > 0" class="ball-count">剩余{{ redBallsRemaining }}</text>
         </view>
-        <view 
-          class="ball-btn" 
-          :class="{ disabled: !canHitColorBall(2) }"
-          @tap="addScoreSafe(2)"
-        >
+        <view class="ball-btn" :class="{ disabled: !canHitColorBall(2) }" @tap="addScoreSafe(2)">
           <view class="ball-icon">🟡</view>
           <text class="ball-label">黄球</text>
           <text class="ball-score">2分</text>
           <text v-if="isBallHit(2)" class="ball-hit">✓</text>
         </view>
-        <view 
-          class="ball-btn" 
-          :class="{ disabled: !canHitColorBall(3) }"
-          @tap="addScoreSafe(3)"
-        >
+        <view class="ball-btn" :class="{ disabled: !canHitColorBall(3) }" @tap="addScoreSafe(3)">
           <view class="ball-icon">🟢</view>
           <text class="ball-label">绿球</text>
           <text class="ball-score">3分</text>
           <text v-if="isBallHit(3)" class="ball-hit">✓</text>
         </view>
-        <view 
-          class="ball-btn" 
-          :class="{ disabled: !canHitColorBall(4) }"
-          @tap="addScoreSafe(4)"
-        >
+        <view class="ball-btn" :class="{ disabled: !canHitColorBall(4) }" @tap="addScoreSafe(4)">
           <view class="ball-icon">🟤</view>
           <text class="ball-label">棕球</text>
           <text class="ball-score">4分</text>
           <text v-if="isBallHit(4)" class="ball-hit">✓</text>
         </view>
-        <view 
-          class="ball-btn" 
-          :class="{ disabled: !canHitColorBall(5) }"
-          @tap="addScoreSafe(5)"
-        >
+        <view class="ball-btn" :class="{ disabled: !canHitColorBall(5) }" @tap="addScoreSafe(5)">
           <view class="ball-icon">🔵</view>
           <text class="ball-label">蓝球</text>
           <text class="ball-score">5分</text>
           <text v-if="isBallHit(5)" class="ball-hit">✓</text>
         </view>
-        <view 
-          class="ball-btn" 
-          :class="{ disabled: !canHitColorBall(6) }"
-          @tap="addScoreSafe(6)"
-        >
+        <view class="ball-btn" :class="{ disabled: !canHitColorBall(6) }" @tap="addScoreSafe(6)">
           <view class="ball-icon">💗</view>
           <text class="ball-label">粉球</text>
           <text class="ball-score">6分</text>
           <text v-if="isBallHit(6)" class="ball-hit">✓</text>
         </view>
-        <view 
-          class="ball-btn" 
-          :class="{ disabled: !canHitColorBall(7) }"
-          @tap="addScoreSafe(7)"
-        >
+        <view class="ball-btn" :class="{ disabled: !canHitColorBall(7) }" @tap="addScoreSafe(7)">
           <view class="ball-icon">⚫</view>
           <text class="ball-label">黑球</text>
           <text class="ball-score">7分</text>
@@ -209,8 +185,6 @@
         </view>
       </view>
     </view>
-
-
 
     <view v-if="config.gameRounds" class="round-controls-section">
       <view class="round-control-btn" @tap="nextRoundSafe">
@@ -269,9 +243,9 @@
       <view class="foul-modal" @tap.stop>
         <view class="foul-modal-title">选择罚分</view>
         <view class="foul-modal-content">
-          <view 
-            v-for="points in [4, 5, 6, 7]" 
-            :key="points" 
+          <view
+            v-for="points in [4, 5, 6, 7]"
+            :key="points"
             class="foul-points-btn"
             @tap="selectFoulPoints(points)"
           >
@@ -291,9 +265,9 @@
           </view>
         </view>
         <scroll-view class="records-modal-list" scroll-y>
-          <view 
-            v-for="record in operationRecords" 
-            :key="record.id" 
+          <view
+            v-for="record in operationRecords"
+            :key="record.id"
             class="record-item"
             :class="record.action"
           >
@@ -342,7 +316,7 @@ const PLAYER_COLORS = [
   'linear-gradient(135deg, #4a9eff 0%, #2d5a8a 100%)',
   'linear-gradient(135deg, #ff6b6b 0%, #c94c4c 100%)',
   'linear-gradient(135deg, #4ecdc4 0%, #26a69a 100%)',
-  'linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)'
+  'linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)',
 ];
 
 const config = reactive<SnookerConfig>({
@@ -353,12 +327,38 @@ const config = reactive<SnookerConfig>({
   enableBreakStats: true,
   enableFoulPenalty: true,
   gameTimeMinutes: null,
-  enablePlayerTimer: false
+  enablePlayerTimer: false,
 });
 
 const players = ref<Player[]>([
-  { name: '选手1', score: 0, streak: 0, highestStreak: 0, highestBreak: 0, redBallsHit: 0, yellowBallsHit: 0, greenBallsHit: 0, brownBallsHit: 0, blueBallsHit: 0, pinkBallsHit: 0, blackBallsHit: 0 },
-  { name: '选手2', score: 0, streak: 0, highestStreak: 0, highestBreak: 0, redBallsHit: 0, yellowBallsHit: 0, greenBallsHit: 0, brownBallsHit: 0, blueBallsHit: 0, pinkBallsHit: 0, blackBallsHit: 0 }
+  {
+    name: '选手1',
+    score: 0,
+    streak: 0,
+    highestStreak: 0,
+    highestBreak: 0,
+    redBallsHit: 0,
+    yellowBallsHit: 0,
+    greenBallsHit: 0,
+    brownBallsHit: 0,
+    blueBallsHit: 0,
+    pinkBallsHit: 0,
+    blackBallsHit: 0,
+  },
+  {
+    name: '选手2',
+    score: 0,
+    streak: 0,
+    highestStreak: 0,
+    highestBreak: 0,
+    redBallsHit: 0,
+    yellowBallsHit: 0,
+    greenBallsHit: 0,
+    brownBallsHit: 0,
+    blueBallsHit: 0,
+    pinkBallsHit: 0,
+    blackBallsHit: 0,
+  },
 ]);
 
 const currentPlayer = ref(0);
@@ -398,7 +398,7 @@ const breakBalls = ref({
   brown: 0,
   blue: 0,
   pink: 0,
-  black: 0
+  black: 0,
 });
 
 interface HistoryState {
@@ -424,12 +424,12 @@ onMounted(() => {
   } catch (e) {
     console.error('Failed to load config:', e);
   }
-  
+
   startTimer();
 });
 
 function initPlayers() {
-  players.value = config.playerNames.map(name => ({
+  players.value = config.playerNames.map((name) => ({
     name,
     score: 0,
     streak: 0,
@@ -441,9 +441,9 @@ function initPlayers() {
     brownBallsHit: 0,
     blueBallsHit: 0,
     pinkBallsHit: 0,
-    blackBallsHit: 0
+    blackBallsHit: 0,
   }));
-  
+
   playerTimers.value = Array(config.playerCount).fill(0);
   playerWins.value = Array(config.playerCount).fill(0);
   playerFifties.value = Array(config.playerCount).fill(0);
@@ -455,7 +455,7 @@ function addOperationRecord(record: Omit<OperationRecord, 'id' | 'time'>) {
   operationRecords.value.unshift({
     ...record,
     id: ++recordId,
-    time: timeStr
+    time: timeStr,
   });
   if (operationRecords.value.length > 100) {
     operationRecords.value.pop();
@@ -470,7 +470,7 @@ function getBallName(points: number): string {
     4: '棕球',
     5: '蓝球',
     6: '粉球',
-    7: '黑球'
+    7: '黑球',
   };
   return ballNames[points] || '未知';
 }
@@ -488,7 +488,7 @@ function saveHistory() {
     currentRound: currentRound.value,
     lastHitWasRed: lastHitWasRed.value,
     remainingColorBalls: [...remainingColorBalls.value],
-    isColorPhase: isColorPhase.value
+    isColorPhase: isColorPhase.value,
   });
   if (historyStack.value.length > 50) {
     historyStack.value.shift();
@@ -500,7 +500,7 @@ function undoAction() {
     uni.showToast({ title: '没有可撤销的操作', icon: 'none' });
     return;
   }
-  
+
   const lastState = historyStack.value.pop()!;
   players.value = lastState.players;
   currentPlayer.value = lastState.currentPlayer;
@@ -510,7 +510,7 @@ function undoAction() {
   lastHitWasRed.value = lastState.lastHitWasRed;
   remainingColorBalls.value = [...lastState.remainingColorBalls];
   isColorPhase.value = lastState.isColorPhase;
-  
+
   uni.showToast({ title: '已撤销', icon: 'success' });
 }
 
@@ -536,13 +536,13 @@ function resetGame() {
         startTimer();
         uni.showToast({ title: '已重置', icon: 'success' });
       }
-    }
+    },
   });
 }
 
 function addScore(points: number) {
   saveHistory();
-  
+
   const player = players.value[currentPlayer.value];
   player.score += points;
   player.streak++;
@@ -553,9 +553,9 @@ function addScore(points: number) {
   if (currentBreak.value > player.highestBreak) {
     player.highestBreak = currentBreak.value;
   }
-  
+
   const ballName = getBallName(points);
-  
+
   if (points === 1) {
     player.redBallsHit++;
     breakBalls.value.red++;
@@ -563,16 +563,34 @@ function addScore(points: number) {
     lastHitWasRed.value = true;
   } else {
     lastHitWasRed.value = false;
-    
-    switch(points) {
-      case 2: player.yellowBallsHit++; breakBalls.value.yellow++; break;
-      case 3: player.greenBallsHit++; breakBalls.value.green++; break;
-      case 4: player.brownBallsHit++; breakBalls.value.brown++; break;
-      case 5: player.blueBallsHit++; breakBalls.value.blue++; break;
-      case 6: player.pinkBallsHit++; breakBalls.value.pink++; break;
-      case 7: player.blackBallsHit++; breakBalls.value.black++; break;
+
+    switch (points) {
+      case 2:
+        player.yellowBallsHit++;
+        breakBalls.value.yellow++;
+        break;
+      case 3:
+        player.greenBallsHit++;
+        breakBalls.value.green++;
+        break;
+      case 4:
+        player.brownBallsHit++;
+        breakBalls.value.brown++;
+        break;
+      case 5:
+        player.blueBallsHit++;
+        breakBalls.value.blue++;
+        break;
+      case 6:
+        player.pinkBallsHit++;
+        breakBalls.value.pink++;
+        break;
+      case 7:
+        player.blackBallsHit++;
+        breakBalls.value.black++;
+        break;
     }
-    
+
     if (isColorPhase.value) {
       const index = remainingColorBalls.value.indexOf(points);
       if (index > -1) {
@@ -586,45 +604,45 @@ function addScore(points: number) {
 
 function addScoreSafe(points: number) {
   if (isProcessing.value) return;
-  
+
   if (isColorPhase.value) {
     if (remainingColorBalls.value.length === 0) {
       uni.showToast({ title: '所有球已打完', icon: 'none' });
       return;
     }
-    
+
     const nextBall = remainingColorBalls.value[0];
     if (points !== nextBall) {
       return;
     }
   }
-  
+
   isProcessing.value = true;
-  
+
   const player = players.value[currentPlayer.value];
   const ballName = getBallName(points);
-  
+
   addOperationRecord({
     playerName: player.name,
     action: 'hit',
     ballType: ballName,
     points: points,
-    description: `${player.name} 击打${ballName}，得${points}分`
+    description: `${player.name} 击打${ballName}，得${points}分`,
   });
-  
+
   addScore(points);
-  
+
   setTimeout(() => {
     isProcessing.value = false;
-    
+
     if (isOverScore()) {
       addOperationRecord({
         playerName: player.name,
         action: 'hit',
-        description: `${player.name} 超分！领先${player.score - players.value.reduce((sum, p, i) => i === currentPlayer.value ? sum : sum + p.score, 0)}分`
+        description: `${player.name} 超分！领先${player.score - players.value.reduce((sum, p, i) => (i === currentPlayer.value ? sum : sum + p.score), 0)}分`,
       });
     }
-    
+
     if (redBallsRemaining.value === 0 && remainingColorBalls.value.length === 0) {
       setTimeout(() => {
         showSettleModal();
@@ -635,7 +653,7 @@ function addScoreSafe(points: number) {
 
 function subtractScore() {
   saveHistory();
-  
+
   const player = players.value[currentPlayer.value];
   if (player.score > 0) {
     player.score--;
@@ -644,7 +662,7 @@ function subtractScore() {
 
 function subtractScoreSafe() {
   if (isProcessing.value) return;
-  
+
   isProcessing.value = true;
   subtractScore();
   setTimeout(() => {
@@ -656,18 +674,18 @@ function canHitColorBall(points: number): boolean {
   if (redBallsRemaining.value > 0 && !isColorPhase.value) {
     return lastHitWasRed.value;
   }
-  
+
   if (isColorPhase.value) {
     if (remainingColorBalls.value.length === 0) {
       return false;
     }
     return remainingColorBalls.value[0] === points;
   }
-  
+
   if (redBallsRemaining.value === 0 && lastHitWasRed.value && !isColorPhase.value) {
     return true;
   }
-  
+
   return false;
 }
 
@@ -675,25 +693,25 @@ function isBallHit(points: number): boolean {
   if (!isColorPhase.value) {
     return false;
   }
-  
+
   return !remainingColorBalls.value.includes(points);
 }
 
 function handleFoul(foulPoints: number) {
   saveHistory();
-  
+
   const current = players.value[currentPlayer.value];
-  
+
   if (config.enableFoulPenalty) {
     current.score = Math.max(0, current.score - foulPoints);
   }
-  
+
   const nextIndex = (currentPlayer.value + 1) % players.value.length;
   players.value[nextIndex].score += foulPoints;
-  
+
   currentBreak.value = 0;
   current.streak = 0;
-  
+
   switchPlayer(nextIndex);
 }
 
@@ -716,23 +734,23 @@ function closeRecordsModal() {
 
 function selectFoulPoints(points: number) {
   if (isProcessing.value) return;
-  
+
   isProcessing.value = true;
   showFoulModal.value = false;
-  
+
   const foulPlayer = players.value[currentPlayer.value];
   const nextIndex = (currentPlayer.value + 1) % players.value.length;
   const nextPlayer = players.value[nextIndex];
-  
+
   handleFoul(points);
-  
+
   addOperationRecord({
     playerName: foulPlayer.name,
     action: 'foul',
     points: points,
-    description: `${foulPlayer.name} 犯规，罚${points}分，${nextPlayer.name}获得${points}分`
+    description: `${foulPlayer.name} 犯规，罚${points}分，${nextPlayer.name}获得${points}分`,
   });
-  
+
   uni.showToast({ title: `罚${points}分`, icon: 'none' });
   setTimeout(() => {
     isProcessing.value = false;
@@ -766,13 +784,19 @@ function formatTime(seconds: number): string {
 function switchPlayer(index: number) {
   if (index !== currentPlayer.value) {
     stopTimer();
-    
+
     const previousPlayer = players.value[currentPlayer.value];
-    
-    const totalBalls = breakBalls.value.red + breakBalls.value.yellow + breakBalls.value.green + 
-                       breakBalls.value.brown + breakBalls.value.blue + breakBalls.value.pink + breakBalls.value.black;
+
+    const totalBalls =
+      breakBalls.value.red +
+      breakBalls.value.yellow +
+      breakBalls.value.green +
+      breakBalls.value.brown +
+      breakBalls.value.blue +
+      breakBalls.value.pink +
+      breakBalls.value.black;
     const breakScore = currentBreak.value;
-    
+
     const ballCounts: string[] = [];
     if (breakBalls.value.red > 0) {
       ballCounts.push(`红球${breakBalls.value.red}`);
@@ -795,27 +819,27 @@ function switchPlayer(index: number) {
     if (breakBalls.value.black > 0) {
       ballCounts.push(`黑球${breakBalls.value.black}`);
     }
-    
+
     players.value[currentPlayer.value].streak = 0;
     currentPlayer.value = index;
     currentBreak.value = 0;
     lastHitWasRed.value = false;
     breakBalls.value = { red: 0, yellow: 0, green: 0, brown: 0, blue: 0, pink: 0, black: 0 };
-    
+
     startTimer();
-    
+
     if (totalBalls > 0) {
       addOperationRecord({
         playerName: previousPlayer.name,
         action: 'switch',
-        description: `${previousPlayer.name} 单杆：连续击球${totalBalls}次（${ballCounts.join('，')}），得${breakScore}分`
+        description: `${previousPlayer.name} 单杆：连续击球${totalBalls}次（${ballCounts.join('，')}），得${breakScore}分`,
       });
     }
-    
+
     addOperationRecord({
       playerName: players.value[index].name,
       action: 'switch',
-      description: `切换选手 → ${players.value[index].name}`
+      description: `切换选手 → ${players.value[index].name}`,
     });
   }
 }
@@ -827,12 +851,12 @@ function nextPlayer() {
 
 function nextPlayerSafe() {
   if (isProcessing.value) return;
-  
+
   isProcessing.value = true;
   nextPlayer();
-  uni.showToast({ 
-    title: `${players.value[currentPlayer.value].name}`, 
-    icon: 'none' 
+  uni.showToast({
+    title: `${players.value[currentPlayer.value].name}`,
+    icon: 'none',
   });
   setTimeout(() => {
     isProcessing.value = false;
@@ -844,7 +868,7 @@ function nextRound() {
     uni.showToast({ title: '已达到最大局数', icon: 'none' });
     return;
   }
-  
+
   currentRound.value++;
   currentPlayer.value = 0;
   currentBreak.value = 0;
@@ -853,8 +877,8 @@ function nextRound() {
   remainingColorBalls.value = [2, 3, 4, 5, 6, 7];
   isColorPhase.value = false;
   breakBalls.value = { red: 0, yellow: 0, green: 0, brown: 0, blue: 0, pink: 0, black: 0 };
-  
-  players.value.forEach(player => {
+
+  players.value.forEach((player) => {
     player.score = 0;
     player.streak = 0;
     player.highestStreak = 0;
@@ -867,13 +891,13 @@ function nextRound() {
     player.pinkBallsHit = 0;
     player.blackBallsHit = 0;
   });
-  
+
   playerTimers.value = Array(config.playerCount).fill(0);
 }
 
 function nextRoundSafe() {
   if (isProcessing.value) return;
-  
+
   isProcessing.value = true;
   nextRound();
   uni.showToast({ title: `第 ${currentRound.value} 局开始`, icon: 'none' });
@@ -897,41 +921,42 @@ function closeSettleModal() {
 }
 
 function handleNextRound() {
-  const winnerIndex = players.value.reduce((prev, curr, index) => 
-    curr.score > players.value[prev].score ? index : prev, 0
+  const winnerIndex = players.value.reduce(
+    (prev, curr, index) => (curr.score > players.value[prev].score ? index : prev),
+    0
   );
   const winner = players.value[winnerIndex];
-  
+
   playerWins.value[winnerIndex]++;
-  
+
   if (currentBreak.value >= 50) {
     playerFifties.value[currentPlayer.value]++;
   }
-  
+
   closeSettleModal();
-  
+
   addOperationRecord({
     playerName: winner.name,
     action: 'switch',
-    description: `第${currentRound.value}局结束，${winner.name}获胜！比分：${players.value.map(p => p.name + ':' + p.score).join(' ')} | 最高单杆：${players.value.map(p => p.name + ':' + p.highestBreak).join(' ')} | 最高连击：${players.value.map(p => p.name + ':' + p.highestStreak).join(' ')}`
+    description: `第${currentRound.value}局结束，${winner.name}获胜！比分：${players.value.map((p) => p.name + ':' + p.score).join(' ')} | 最高单杆：${players.value.map((p) => p.name + ':' + p.highestBreak).join(' ')} | 最高连击：${players.value.map((p) => p.name + ':' + p.highestStreak).join(' ')}`,
   });
-  
+
   if (config.mode === 'frame' && config.gameRounds) {
     const winRounds = Math.ceil(config.gameRounds / 2);
-    
+
     if (playerWins.value[winnerIndex] >= winRounds) {
       uni.showModal({
         title: '比赛结束',
-        content: `${winner.name} 以 ${playerWins.value[winnerIndex]} : ${playerWins.value.reduce((a, b, i) => i === winnerIndex ? a : a + b, 0)} 获胜！`,
+        content: `${winner.name} 以 ${playerWins.value[winnerIndex]} : ${playerWins.value.reduce((a, b, i) => (i === winnerIndex ? a : a + b), 0)} 获胜！`,
         showCancel: false,
         success: () => {
           uni.navigateBack();
-        }
+        },
       });
       return;
     }
   }
-  
+
   if (config.gameRounds && currentRound.value >= config.gameRounds) {
     const finalWinnerIndex = playerWins.value.indexOf(Math.max(...playerWins.value));
     const finalWinner = players.value[finalWinnerIndex];
@@ -941,13 +966,13 @@ function handleNextRound() {
       showCancel: false,
       success: () => {
         uni.navigateBack();
-      }
+      },
     });
     return;
   }
-  
+
   uni.showToast({ title: `${winner.name} 本局获胜！`, icon: 'success' });
-  
+
   setTimeout(() => {
     nextRound();
     uni.showToast({ title: `第 ${currentRound.value} 局开始`, icon: 'none' });
@@ -955,28 +980,29 @@ function handleNextRound() {
 }
 
 function handleSettleMatch() {
-  const winnerIndex = players.value.reduce((prev, curr, index) => 
-    curr.score > players.value[prev].score ? index : prev, 0
+  const winnerIndex = players.value.reduce(
+    (prev, curr, index) => (curr.score > players.value[prev].score ? index : prev),
+    0
   );
   const winner = players.value[winnerIndex];
-  
+
   playerWins.value[winnerIndex]++;
-  
+
   closeSettleModal();
-  
+
   addOperationRecord({
     playerName: winner.name,
     action: 'switch',
-    description: `比赛结束，${winner.name}最终获胜！最终比分：${players.value.map(p => p.name + ':' + p.score).join(' ')} | 最高单杆：${players.value.map(p => p.name + ':' + p.highestBreak).join(' ')} | 最高连击：${players.value.map(p => p.name + ':' + p.highestStreak).join(' ')}`
+    description: `比赛结束，${winner.name}最终获胜！最终比分：${players.value.map((p) => p.name + ':' + p.score).join(' ')} | 最高单杆：${players.value.map((p) => p.name + ':' + p.highestBreak).join(' ')} | 最高连击：${players.value.map((p) => p.name + ':' + p.highestStreak).join(' ')}`,
   });
-  
+
   uni.showModal({
     title: '比赛结束',
-    content: `${winner.name} 最终获胜！\n\n本局比分：${players.value.map(p => p.name + ':' + p.score).join(' ')}`,
+    content: `${winner.name} 最终获胜！\n\n本局比分：${players.value.map((p) => p.name + ':' + p.score).join(' ')}`,
     showCancel: false,
     success: () => {
       uni.navigateBack();
-    }
+    },
   });
 }
 
@@ -990,8 +1016,9 @@ function calculateMaxRemainingScore(): number {
 
 function isOverScore(): boolean {
   const currentPlayerScore = players.value[currentPlayer.value].score;
-  const otherPlayersScore = players.value.reduce((sum, p, i) => 
-    i === currentPlayer.value ? sum : sum + p.score, 0
+  const otherPlayersScore = players.value.reduce(
+    (sum, p, i) => (i === currentPlayer.value ? sum : sum + p.score),
+    0
   );
   const scoreDiff = currentPlayerScore - otherPlayersScore;
   const remainingScore = calculateMaxRemainingScore();
@@ -999,8 +1026,9 @@ function isOverScore(): boolean {
 }
 
 function getSettleWinner() {
-  const winnerIndex = players.value.reduce((prev, curr, index) => 
-    curr.score > players.value[prev].score ? index : prev, 0
+  const winnerIndex = players.value.reduce(
+    (prev, curr, index) => (curr.score > players.value[prev].score ? index : prev),
+    0
   );
   return players.value[winnerIndex];
 }
@@ -1011,21 +1039,22 @@ function endMatch() {
     content: '确定要结束比赛吗？',
     success: (res) => {
       if (res.confirm) {
-        const winnerIndex = players.value.reduce((prev, curr, index) => 
-          curr.score > players.value[prev].score ? index : prev, 0
+        const winnerIndex = players.value.reduce(
+          (prev, curr, index) => (curr.score > players.value[prev].score ? index : prev),
+          0
         );
         const winner = players.value[winnerIndex];
-        
+
         uni.showModal({
           title: '比赛结束',
-          content: `${winner.name} 获胜！\n\n本局比分：${players.value.map(p => p.name + ':' + p.score).join(' ')}`,
+          content: `${winner.name} 获胜！\n\n本局比分：${players.value.map((p) => p.name + ':' + p.score).join(' ')}`,
           showCancel: false,
           success: () => {
             uni.navigateBack();
-          }
+          },
         });
       }
-    }
+    },
   });
 }
 </script>
@@ -1064,7 +1093,7 @@ function endMatch() {
   justify-content: center;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
-  
+
   text {
     color: #fff;
     font-size: 48rpx;
@@ -1091,7 +1120,7 @@ function endMatch() {
   display: flex;
   align-items: center;
   gap: 8rpx;
-  
+
   text {
     color: #fff;
     font-size: 26rpx;
@@ -1153,7 +1182,7 @@ function endMatch() {
   overflow: hidden;
   border: 3rpx solid transparent;
   transition: all 0.3s ease;
-  
+
   &.active {
     border-color: #ff8c00;
     box-shadow: 0 0 20rpx rgba(255, 140, 0, 0.3);
@@ -1165,7 +1194,7 @@ function endMatch() {
   align-items: center;
   justify-content: space-between;
   padding: 20rpx;
-  
+
   .player-name {
     color: #fff;
     font-size: 32rpx;
@@ -1348,7 +1377,7 @@ function endMatch() {
   padding: 8rpx 16rpx;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 20rpx;
-  
+
   &:active {
     background: rgba(255, 255, 255, 0.2);
   }
@@ -1400,7 +1429,7 @@ function endMatch() {
   border-radius: 50%;
   color: rgba(255, 255, 255, 0.8);
   font-size: 28rpx;
-  
+
   &:active {
     background: rgba(255, 255, 255, 0.2);
   }
@@ -1424,19 +1453,19 @@ function endMatch() {
   gap: 15rpx;
   padding: 10rpx 0;
   border-bottom: 1rpx solid rgba(255, 255, 255, 0.05);
-  
+
   &.hit {
     .record-desc {
       color: #4ecdc4;
     }
   }
-  
+
   &.foul {
     .record-desc {
       color: #ff6b6b;
     }
   }
-  
+
   &.switch {
     .record-desc {
       color: #a855f7;
@@ -1526,12 +1555,12 @@ function endMatch() {
   align-items: center;
   gap: 8rpx;
   transition: all 0.3s;
-  
+
   &:active {
     transform: scale(0.95);
     background: rgba(255, 140, 0, 0.2);
   }
-  
+
   &.disabled {
     opacity: 0.4;
     pointer-events: none;
@@ -1599,16 +1628,16 @@ function endMatch() {
   align-items: center;
   gap: 8rpx;
   transition: all 0.3s;
-  
+
   &:active {
     transform: scale(0.95);
     background: rgba(74, 158, 255, 0.4);
   }
-  
+
   .btn-icon {
     font-size: 36rpx;
   }
-  
+
   .btn-text {
     color: #4a9eff;
     font-size: 24rpx;
@@ -1643,23 +1672,23 @@ function endMatch() {
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   text {
     font-size: 32rpx;
     font-weight: bold;
   }
-  
+
   &.secondary {
     background: rgba(255, 255, 255, 0.1);
-    
+
     text {
       color: rgba(255, 255, 255, 0.8);
     }
   }
-  
+
   &.primary {
     background: linear-gradient(135deg, #ff8c00 0%, #ff6b35 100%);
-    
+
     text {
       color: #fff;
     }
@@ -1713,7 +1742,7 @@ function endMatch() {
   justify-content: center;
   gap: 5rpx;
   transition: all 0.3s;
-  
+
   &:active {
     transform: scale(0.95);
     background: rgba(255, 140, 0, 0.4);
@@ -1768,11 +1797,11 @@ function endMatch() {
 .table-row {
   display: flex;
   border-bottom: 1rpx solid rgba(255, 255, 255, 0.1);
-  
+
   &:last-child {
     border-bottom: none;
   }
-  
+
   &.table-header {
     background: rgba(255, 140, 0, 0.1);
   }
@@ -1784,7 +1813,7 @@ function endMatch() {
   text-align: center;
   color: #fff;
   font-size: 26rpx;
-  
+
   .table-header & {
     color: #ff8c00;
     font-weight: bold;
@@ -1809,16 +1838,16 @@ function endMatch() {
   font-size: 28rpx;
   font-weight: bold;
   transition: all 0.3s;
-  
+
   &:active {
     transform: scale(0.98);
   }
-  
+
   &.secondary {
     background: rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.8);
   }
-  
+
   &.primary {
     background: linear-gradient(135deg, #ff8c00 0%, #ff6b35 100%);
     color: #fff;

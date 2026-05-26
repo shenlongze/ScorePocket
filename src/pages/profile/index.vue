@@ -1,63 +1,62 @@
 <template>
   <view class="profile-page">
     <view class="profile-header">
-    <view class="user-card">
-      <view class="avatar">
-        <text>{{ userInfo.nickname.charAt(0) }}</text>
-      </view>
-      <view class="user-info">
-        <text class="nickname">{{ userInfo.nickname }}</text>
-      </view>
-    </view>
-  </view>
-  
-  <view class="stats-section">
-    <text class="section-title">战绩统计</text>
-    <view class="stats-grid">
-      <view class="stat-item">
-        <view class="stat-icon">💥</view>
-        <text class="stat-value">{{ userInfo.stats.zhaQingCount }}</text>
-        <text class="stat-label">炸清</text>
-      </view>
-      <view class="stat-item">
-        <view class="stat-icon">🎯</view>
-        <text class="stat-value">{{ userInfo.stats.jieQingCount }}</text>
-        <text class="stat-label">接清</text>
-      </view>
-      <view class="stat-item">
-        <view class="stat-icon">🏆</view>
-        <text class="stat-value">{{ userInfo.stats.winCount }}</text>
-        <text class="stat-label">胜场</text>
-      </view>
-      <view class="stat-item">
-        <view class="stat-icon">📊</view>
-        <text class="stat-value">{{ userInfo.stats.totalMatches }}</text>
-        <text class="stat-label">总对局</text>
+      <view class="user-card">
+        <view class="avatar">
+          <text>{{ userInfo.nickname.charAt(0) }}</text>
+        </view>
+        <view class="user-info">
+          <text class="nickname">{{ userInfo.nickname }}</text>
+        </view>
       </view>
     </view>
-  </view>
-    
+
+    <view class="stats-section">
+      <text class="section-title">战绩统计</text>
+      <view class="stats-grid">
+        <view class="stat-item">
+          <view class="stat-icon">💥</view>
+          <text class="stat-value">{{ userInfo.stats.zhaQingCount }}</text>
+          <text class="stat-label">炸清</text>
+        </view>
+        <view class="stat-item">
+          <view class="stat-icon">🎯</view>
+          <text class="stat-value">{{ userInfo.stats.jieQingCount }}</text>
+          <text class="stat-label">接清</text>
+        </view>
+        <view class="stat-item">
+          <view class="stat-icon">🏆</view>
+          <text class="stat-value">{{ userInfo.stats.winCount }}</text>
+          <text class="stat-label">胜场</text>
+        </view>
+        <view class="stat-item">
+          <view class="stat-icon">📊</view>
+          <text class="stat-value">{{ userInfo.stats.totalMatches }}</text>
+          <text class="stat-label">总对局</text>
+        </view>
+      </view>
+    </view>
+
     <view class="menu-section">
       <view class="menu-item" @tap="goToSettings">
         <view class="menu-icon">⚙️</view>
         <text class="menu-text">设置</text>
         <text class="menu-arrow">›</text>
       </view>
-      
+
       <view class="menu-item" @tap="goToHelp">
         <view class="menu-icon">❓</view>
         <text class="menu-text">帮助与反馈</text>
         <text class="menu-arrow">›</text>
       </view>
-      
+
       <view class="menu-item" @tap="goToAbout">
         <view class="menu-icon">ℹ️</view>
         <text class="menu-text">关于我们</text>
         <text class="menu-arrow">›</text>
       </view>
-      
     </view>
-    
+
     <view class="footer">
       <text class="version">版本 1.0.0</text>
     </view>
@@ -65,34 +64,34 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { getUserInfo, type UserInfo as AuthUserInfo } from '@/utils/auth'
+import { ref, onMounted } from 'vue';
+import { getUserInfo, type UserInfo as AuthUserInfo } from '@/utils/auth';
 
 const userInfo = ref<AuthUserInfo>({
   id: '',
   nickname: '游客',
   avatar: '',
-  stats: { zhaQingCount: 0, jieQingCount: 0, totalMatches: 0, winCount: 0 }
-})
+  stats: { zhaQingCount: 0, jieQingCount: 0, totalMatches: 0, winCount: 0 },
+});
 
 onMounted(() => {
-  userInfo.value = getUserInfo()
-})
+  userInfo.value = getUserInfo();
+});
 
 function goToSettings() {
-  uni.showToast({ title: '设置页面开发中', icon: 'none' })
+  uni.showToast({ title: '设置页面开发中', icon: 'none' });
 }
 
 function goToHelp() {
-  uni.showToast({ title: '帮助页面开发中', icon: 'none' })
+  uni.showToast({ title: '帮助页面开发中', icon: 'none' });
 }
 
 function goToAbout() {
   uni.showModal({
     title: '关于台球计分',
     content: '版本 1.0.0\n\n一款专业的线下台球计分工具，支持多种玩法，让您的台球之旅更加精彩！',
-    showCancel: false
-  })
+    showCancel: false,
+  });
 }
 </script>
 
@@ -122,7 +121,7 @@ function goToAbout() {
   align-items: center;
   justify-content: center;
   margin-right: 25rpx;
-  
+
   text {
     color: #fff;
     font-size: 48rpx;
@@ -199,7 +198,7 @@ function goToAbout() {
   align-items: center;
   padding: 25rpx 30rpx;
   border-bottom: 1rpx solid rgba(255, 255, 255, 0.1);
-  
+
   &:last-child {
     border-bottom: none;
   }

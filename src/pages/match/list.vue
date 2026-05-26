@@ -6,7 +6,7 @@
         <text>筛选</text>
       </view>
     </view>
-    
+
     <view class="stats-section" v-if="stats">
       <view class="stat-item">
         <text class="stat-value">{{ stats.total }}</text>
@@ -25,31 +25,19 @@
         <text class="stat-label">清台</text>
       </view>
     </view>
-    
+
     <view class="tabs">
-      <view 
-        class="tab-item" 
-        :class="{ active: activeTab === 'all' }"
-        @tap="activeTab = 'all'"
-      >
+      <view class="tab-item" :class="{ active: activeTab === 'all' }" @tap="activeTab = 'all'">
         <text>全部</text>
       </view>
-      <view 
-        class="tab-item" 
-        :class="{ active: activeTab === 'win' }"
-        @tap="activeTab = 'win'"
-      >
+      <view class="tab-item" :class="{ active: activeTab === 'win' }" @tap="activeTab = 'win'">
         <text>获胜</text>
       </view>
-      <view 
-        class="tab-item" 
-        :class="{ active: activeTab === 'lose' }"
-        @tap="activeTab = 'lose'"
-      >
+      <view class="tab-item" :class="{ active: activeTab === 'lose' }" @tap="activeTab = 'lose'">
         <text>失败</text>
       </view>
     </view>
-    
+
     <scroll-view class="match-list" scroll-y>
       <view v-if="filteredMatches.length === 0" class="empty-state">
         <text class="empty-icon">📭</text>
@@ -58,10 +46,10 @@
           <text>开始第一局</text>
         </view>
       </view>
-      
-      <view 
-        v-for="match in filteredMatches" 
-        :key="match.id" 
+
+      <view
+        v-for="match in filteredMatches"
+        :key="match.id"
         class="match-card"
         @tap="viewMatch(match)"
       >
@@ -69,7 +57,7 @@
           <text class="match-game">{{ match.gameType }}</text>
           <text class="match-date">{{ formatDate(match.date) }}</text>
         </view>
-        
+
         <view class="match-content">
           <view class="player-item" :class="{ winner: match.winner === 0 }">
             <view class="player-avatar">{{ match.player1.charAt(0) }}</view>
@@ -78,11 +66,11 @@
               <text class="player-score">{{ match.score1 }}</text>
             </view>
           </view>
-          
+
           <view class="vs">
             <text>VS</text>
           </view>
-          
+
           <view class="player-item" :class="{ winner: match.winner === 1 }">
             <view class="player-avatar">{{ match.player2.charAt(0) }}</view>
             <view class="player-info">
@@ -91,7 +79,7 @@
             </view>
           </view>
         </view>
-        
+
         <view class="match-footer">
           <text class="match-result" :class="match.winner === 0 ? 'win' : 'lose'">
             {{ match.winner === 0 ? '胜利' : '失败' }}
@@ -104,67 +92,107 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue';
 
 onMounted(() => {
-  uni.redirectTo({ url: '/pages/coming-soon/index?type=match' })
-})
+  uni.redirectTo({ url: '/pages/coming-soon/index?type=match' });
+});
 
 interface Match {
-  id: string
-  gameType: string
-  player1: string
-  player2: string
-  score1: number
-  score2: number
-  winner: number
-  clean: boolean
-  date: number
+  id: string;
+  gameType: string;
+  player1: string;
+  player2: string;
+  score1: number;
+  score2: number;
+  winner: number;
+  clean: boolean;
+  date: number;
 }
 
-const activeTab = ref('all')
+const activeTab = ref('all');
 
 const mockMatches: Match[] = [
-  { id: '1', gameType: '中式八球', player1: '张三', player2: '李四', score1: 7, score2: 5, winner: 0, clean: true, date: Date.now() - 86400000 },
-  { id: '2', gameType: '九球', player1: '张三', player2: '王五', score1: 3, score2: 5, winner: 1, clean: false, date: Date.now() - 172800000 },
-  { id: '3', gameType: '中式八球', player1: '张三', player2: '赵六', score1: 6, score2: 7, winner: 1, clean: false, date: Date.now() - 259200000 },
-  { id: '4', gameType: '四球', player1: '张三', player2: '钱七', score1: 3, score2: 1, winner: 0, clean: true, date: Date.now() - 345600000 },
-]
+  {
+    id: '1',
+    gameType: '中式八球',
+    player1: '张三',
+    player2: '李四',
+    score1: 7,
+    score2: 5,
+    winner: 0,
+    clean: true,
+    date: Date.now() - 86400000,
+  },
+  {
+    id: '2',
+    gameType: '九球',
+    player1: '张三',
+    player2: '王五',
+    score1: 3,
+    score2: 5,
+    winner: 1,
+    clean: false,
+    date: Date.now() - 172800000,
+  },
+  {
+    id: '3',
+    gameType: '中式八球',
+    player1: '张三',
+    player2: '赵六',
+    score1: 6,
+    score2: 7,
+    winner: 1,
+    clean: false,
+    date: Date.now() - 259200000,
+  },
+  {
+    id: '4',
+    gameType: '四球',
+    player1: '张三',
+    player2: '钱七',
+    score1: 3,
+    score2: 1,
+    winner: 0,
+    clean: true,
+    date: Date.now() - 345600000,
+  },
+];
 
 const stats = computed(() => {
-  const total = mockMatches.length
-  const wins = mockMatches.filter(m => m.winner === 0).length
-  const cleans = mockMatches.filter(m => m.clean).length
+  const total = mockMatches.length;
+  const wins = mockMatches.filter((m) => m.winner === 0).length;
+  const cleans = mockMatches.filter((m) => m.clean).length;
   return {
     total,
     wins,
     winRate: total > 0 ? Math.round((wins / total) * 100) : 0,
-    cleans
-  }
-})
+    cleans,
+  };
+});
 
 const filteredMatches = computed(() => {
   if (activeTab.value === 'win') {
-    return mockMatches.filter(m => m.winner === 0)
+    return mockMatches.filter((m) => m.winner === 0);
   } else if (activeTab.value === 'lose') {
-    return mockMatches.filter(m => m.winner === 1)
+    return mockMatches.filter((m) => m.winner === 1);
   }
-  return mockMatches
-})
+  return mockMatches;
+});
 
 function formatDate(timestamp: number): string {
-  const date = new Date(timestamp)
-  const month = date.getMonth() + 1
-  const day = date.getDate()
-  return `${month}月${day}日`
+  const date = new Date(timestamp);
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  return `${month}月${day}日`;
 }
 
 function viewMatch(match: Match) {
-  uni.showToast({ title: `查看 ${match.gameType} 记录`, icon: 'none' })
+  uni.showToast({ title: `查看 ${match.gameType} 记录`, icon: 'none' });
 }
 
 function goToGame() {
-  uni.switchTab({ url: '/pages/index/index' })
+  uni.switchTab({ url: '/pages/index/index' });
 }
 </script>
 
@@ -239,20 +267,20 @@ function goToGame() {
   border-radius: 30rpx;
   margin-right: 15rpx;
   background: rgba(255, 255, 255, 0.1);
-  
+
   &.active {
     background: #4a9eff;
-    
+
     text {
       color: #fff;
     }
   }
-  
+
   text {
     color: rgba(255, 255, 255, 0.6);
     font-size: 26rpx;
   }
-  
+
   &:last-child {
     margin-right: 0;
   }
@@ -285,7 +313,7 @@ function goToGame() {
   background: #4a9eff;
   padding: 20rpx 60rpx;
   border-radius: 30rpx;
-  
+
   text {
     color: #fff;
     font-size: 28rpx;
@@ -328,12 +356,12 @@ function goToGame() {
   display: flex;
   align-items: center;
   flex: 1;
-  
+
   &.winner {
     .player-avatar {
       border-color: #4cd964;
     }
-    
+
     .player-name {
       color: #4cd964;
     }
@@ -350,7 +378,7 @@ function goToGame() {
   justify-content: center;
   margin-right: 15rpx;
   border: 2rpx solid transparent;
-  
+
   text {
     color: #fff;
     font-size: 24rpx;
@@ -376,7 +404,7 @@ function goToGame() {
 
 .vs {
   padding: 0 20rpx;
-  
+
   text {
     color: rgba(255, 255, 255, 0.4);
     font-size: 24rpx;
@@ -395,11 +423,11 @@ function goToGame() {
 .match-result {
   font-size: 26rpx;
   font-weight: bold;
-  
+
   &.win {
     color: #4cd964;
   }
-  
+
   &.lose {
     color: #ff3b30;
   }

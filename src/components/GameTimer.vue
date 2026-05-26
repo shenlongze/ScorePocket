@@ -16,88 +16,91 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue';
 
 const props = defineProps<{
-  duration: number
-  showControls?: boolean
-  autoStart?: boolean
-}>()
+  duration: number;
+  showControls?: boolean;
+  autoStart?: boolean;
+}>();
 
 const emit = defineEmits<{
-  timeout: []
-  tick: [remaining: number]
-}>()
+  timeout: [];
+  tick: [remaining: number];
+}>();
 
-const remaining = ref(props.duration)
-const isRunning = ref(false)
-let timer: ReturnType<typeof setInterval> | null = null
+const remaining = ref(props.duration);
+const isRunning = ref(false);
+let timer: ReturnType<typeof setInterval> | null = null;
 
 const formattedTime = computed(() => {
-  const mins = Math.floor(remaining.value / 60)
-  const secs = remaining.value % 60
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-})
+  const mins = Math.floor(remaining.value / 60);
+  const secs = remaining.value % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+});
 
-const isWarning = computed(() => remaining.value <= 10 && remaining.value > 3)
-const isDanger = computed(() => remaining.value <= 3)
+const isWarning = computed(() => remaining.value <= 10 && remaining.value > 3);
+const isDanger = computed(() => remaining.value <= 3);
 
 function toggleTimer() {
   if (isRunning.value) {
-    stopTimer()
+    stopTimer();
   } else {
-    startTimer()
+    startTimer();
   }
 }
 
 function startTimer() {
-  if (remaining.value <= 0) return
-  isRunning.value = true
+  if (remaining.value <= 0) return;
+  isRunning.value = true;
   timer = setInterval(() => {
-    remaining.value--
-    emit('tick', remaining.value)
-    
+    remaining.value--;
+    emit('tick', remaining.value);
+
     if (remaining.value <= 3 && remaining.value > 0) {
-      uni.vibrateShort({})
+      uni.vibrateShort({});
     }
-    
+
     if (remaining.value <= 0) {
-      stopTimer()
-      uni.vibrateLong({})
-      emit('timeout')
+      stopTimer();
+      uni.vibrateLong({});
+      emit('timeout');
     }
-  }, 1000)
+  }, 1000);
 }
 
 function stopTimer() {
-  isRunning.value = false
+  isRunning.value = false;
   if (timer) {
-    clearInterval(timer)
-    timer = null
+    clearInterval(timer);
+    timer = null;
   }
 }
 
 function resetTimer() {
-  stopTimer()
-  remaining.value = props.duration
+  stopTimer();
+  remaining.value = props.duration;
 }
 
 function restart() {
-  remaining.value = props.duration
+  remaining.value = props.duration;
   if (props.autoStart) {
-    startTimer()
+    startTimer();
   }
 }
 
-watch(() => props.duration, (newVal) => {
-  remaining.value = newVal
-})
+watch(
+  () => props.duration,
+  (newVal) => {
+    remaining.value = newVal;
+  }
+);
 
 onUnmounted(() => {
-  stopTimer()
-})
+  stopTimer();
+});
 
-defineExpose({ restart })
+defineExpose({ restart });
 </script>
 
 <style lang="scss" scoped>
@@ -108,12 +111,12 @@ defineExpose({ restart })
   margin: 20rpx;
   border: 2rpx solid rgba(74, 158, 255, 0.3);
   transition: all 0.3s ease;
-  
+
   &.warning {
     border-color: #ff9500;
     background: linear-gradient(135deg, #3d2a1a 0%, #2a1f10 100%);
   }
-  
+
   &.danger {
     border-color: #ff3b30;
     background: linear-gradient(135deg, #3d1a1a 0%, #2a1010 100%);
@@ -122,8 +125,13 @@ defineExpose({ restart })
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .timer-display {
@@ -157,7 +165,7 @@ defineExpose({ restart })
   padding: 12rpx 30rpx;
   border-radius: 30rpx;
   font-size: 26rpx;
-  
+
   &.reset {
     background: rgba(255, 255, 255, 0.2);
   }

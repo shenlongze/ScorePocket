@@ -7,7 +7,7 @@
       <text class="page-title">功能开发中</text>
       <view class="placeholder"></view>
     </view>
-    
+
     <view class="content-area">
       <view class="icon-container">
         <text class="main-icon">{{ icon }}</text>
@@ -16,14 +16,14 @@
         <text class="feature-title">{{ featureName }}</text>
         <text class="feature-desc">{{ featureDesc }}</text>
       </view>
-      
+
       <view class="progress-section">
         <view class="progress-bar">
           <view class="progress-fill" :style="{ width: progress + '%' }"></view>
         </view>
         <text class="progress-text">开发进度: {{ progress }}%</text>
       </view>
-      
+
       <view class="info-section">
         <view class="info-item">
           <text class="info-icon">👨‍💻</text>
@@ -34,7 +34,7 @@
           <text class="info-text">预计上线时间: 敬请期待</text>
         </view>
       </view>
-      
+
       <view class="action-btn" @tap="goBack">
         <text>返回首页</text>
       </view>
@@ -43,35 +43,40 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue';
 
-const icon = ref('🚀')
-const featureName = ref('功能开发中')
-const featureDesc = ref('该功能正在紧张开发中，敬请期待！')
-const progress = ref(30)
+const icon = ref('🚀');
+const featureName = ref('功能开发中');
+const featureDesc = ref('该功能正在紧张开发中，敬请期待！');
+const progress = ref(30);
 
 const featureMap: Record<string, { icon: string; name: string; desc: string; progress: number }> = {
   tournament: { icon: '🏆', name: '创建赛事', desc: '组织线下比赛功能正在开发中...', progress: 45 },
   match: { icon: '📊', name: '对局记录', desc: '查看历史战绩功能正在开发中...', progress: 60 },
   chaos: { icon: '🤝', name: '抓迷糊', desc: '多人混战玩法正在开发中...', progress: 20 },
   custom: { icon: '⚙️', name: '自定义', desc: '自由配置功能正在开发中...', progress: 35 },
-}
+};
 
 onMounted(() => {
-  const pages = getCurrentPages()
-  const currentPage = pages[pages.length - 1]
-  const options = (currentPage as any).options || {}
-  const type = options.type || 'default'
-  
-  const feature = featureMap[type] || { icon: '🚀', name: '功能开发中', desc: '该功能正在紧张开发中，敬请期待！', progress: 30 }
-  icon.value = feature.icon
-  featureName.value = feature.name
-  featureDesc.value = feature.desc
-  progress.value = feature.progress
-})
+  const pages = getCurrentPages();
+  const currentPage = pages[pages.length - 1];
+  const options = (currentPage as any).options || {};
+  const type = options.type || 'default';
+
+  const feature = featureMap[type] || {
+    icon: '🚀',
+    name: '功能开发中',
+    desc: '该功能正在紧张开发中，敬请期待！',
+    progress: 30,
+  };
+  icon.value = feature.icon;
+  featureName.value = feature.name;
+  featureDesc.value = feature.desc;
+  progress.value = feature.progress;
+});
 
 function goBack() {
-  uni.switchTab({ url: '/pages/index/index' })
+  uni.switchTab({ url: '/pages/index/index' });
 }
 </script>
 
@@ -135,7 +140,8 @@ function goBack() {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
@@ -207,7 +213,7 @@ function goBack() {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 16rpx;
   margin-bottom: 15rpx;
-  
+
   &:last-child {
     margin-bottom: 0;
   }
@@ -230,7 +236,7 @@ function goBack() {
   background: linear-gradient(135deg, #ff8c00 0%, #ff6b35 100%);
   border-radius: 16rpx;
   text-align: center;
-  
+
   text {
     font-size: 30rpx;
     color: #fff;

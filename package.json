@@ -8,7 +8,11 @@
     "dev:mp-weixin": "uni -p mp-weixin",
     "build:mp-weixin": "uni build -p mp-weixin",
     "dev:app": "uni -p app",
-    "build:app": "uni build -p app"
+    "build:app": "uni build -p app",
+    "lint": "eslint --ext .ts,.vue src/",
+    "lint:fix": "eslint --ext .ts,.vue src/ --fix",
+    "format": "prettier --write src/",
+    "format:check": "prettier --check src/"
   },
   "dependencies": {
     "@dcloudio/uni-app": "3.0.0-alpha-5000820260430001",
@@ -24,9 +28,18 @@
     "@dcloudio/uni-stacktracey": "3.0.0-alpha-5000820260430001",
     "@dcloudio/vite-plugin-uni": "3.0.0-alpha-5000820260430001",
     "@types/node": "^20.11.0",
+    "@typescript-eslint/eslint-plugin": "^8.59.4",
+    "@typescript-eslint/parser": "^8.59.4",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-vue": "^10.9.1",
+    "globals": "^17.6.0",
+    "prettier": "^3.8.3",
     "sass": "^1.99.0",
     "typescript": "^5.3.3",
     "vite": "^5.2.8",
+    "vue-eslint-parser": "^10.4.0",
     "vue-tsc": "^2.0.6"
   }
 }

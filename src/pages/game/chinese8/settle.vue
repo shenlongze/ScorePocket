@@ -14,7 +14,10 @@
         </view>
 
         <view class="players-section">
-          <view class="player-card" :class="{ winner: matchWinner === 0, draw: matchWinner === -1 }">
+          <view
+            class="player-card"
+            :class="{ winner: matchWinner === 0, draw: matchWinner === -1 }"
+          >
             <view class="player-header player-header-1">
               <text class="player-name">{{ matchData.player1Name }}</text>
             </view>
@@ -38,7 +41,10 @@
             <text class="vs-text">VS</text>
           </view>
 
-          <view class="player-card" :class="{ winner: matchWinner === 1, draw: matchWinner === -1 }">
+          <view
+            class="player-card"
+            :class="{ winner: matchWinner === 1, draw: matchWinner === -1 }"
+          >
             <view class="player-header player-header-2">
               <text class="player-name">{{ matchData.player2Name }}</text>
             </view>
@@ -70,8 +76,15 @@
             <view class="record-left">
               <view class="record-player-info">
                 <text class="record-player">{{ record.player1Name }}</text>
-                <view class="record-result" :class="{ winner: record.winner === 0, loser: record.winner === 1, draw: record.winner === -1 }">
-                  <text>{{ record.winner === 0 ? '胜' : (record.winner === 1 ? '负' : '平') }}</text>
+                <view
+                  class="record-result"
+                  :class="{
+                    winner: record.winner === 0,
+                    loser: record.winner === 1,
+                    draw: record.winner === -1,
+                  }"
+                >
+                  <text>{{ record.winner === 0 ? '胜' : record.winner === 1 ? '负' : '平' }}</text>
                 </view>
               </view>
             </view>
@@ -89,8 +102,15 @@
             </view>
             <view class="record-right">
               <view class="record-player-info">
-                <view class="record-result" :class="{ winner: record.winner === 1, loser: record.winner === 0, draw: record.winner === -1 }">
-                  <text>{{ record.winner === 1 ? '胜' : (record.winner === 0 ? '负' : '平') }}</text>
+                <view
+                  class="record-result"
+                  :class="{
+                    winner: record.winner === 1,
+                    loser: record.winner === 0,
+                    draw: record.winner === -1,
+                  }"
+                >
+                  <text>{{ record.winner === 1 ? '胜' : record.winner === 0 ? '负' : '平' }}</text>
                 </view>
                 <text class="record-player">{{ record.player2Name }}</text>
               </view>
@@ -112,40 +132,40 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue';
 
 interface MatchRecord {
-  player1Name: string
-  player2Name: string
-  player1Score: number
-  player2Score: number
-  player1ZhaQing: number
-  player1JieQing: number
-  player2ZhaQing: number
-  player2JieQing: number
-  winner: number
-  time: string
+  player1Name: string;
+  player2Name: string;
+  player1Score: number;
+  player2Score: number;
+  player1ZhaQing: number;
+  player1JieQing: number;
+  player2ZhaQing: number;
+  player2JieQing: number;
+  winner: number;
+  time: string;
 }
 
 interface MatchData {
-  player1Name: string
-  player2Name: string
-  player1Wins: number
-  player2Wins: number
-  player1TotalZhaQing: number
-  player1TotalJieQing: number
-  player2TotalZhaQing: number
-  player2TotalJieQing: number
-  lastRoundScore1: number
-  lastRoundScore2: number
-  lastRoundZq1: number
-  lastRoundJq1: number
-  lastRoundZq2: number
-  lastRoundJq2: number
-  matchTime: string
-  gameMode: string
-  winRounds: number
-  records: MatchRecord[]
+  player1Name: string;
+  player2Name: string;
+  player1Wins: number;
+  player2Wins: number;
+  player1TotalZhaQing: number;
+  player1TotalJieQing: number;
+  player2TotalZhaQing: number;
+  player2TotalJieQing: number;
+  lastRoundScore1: number;
+  lastRoundScore2: number;
+  lastRoundZq1: number;
+  lastRoundJq1: number;
+  lastRoundZq2: number;
+  lastRoundJq2: number;
+  matchTime: string;
+  gameMode: string;
+  winRounds: number;
+  records: MatchRecord[];
 }
 
 const matchData = ref<MatchData>({
@@ -166,81 +186,81 @@ const matchData = ref<MatchData>({
   matchTime: '00:00',
   gameMode: 'simple',
   winRounds: 7,
-  records: []
-})
+  records: [],
+});
 
 const player1WinCount = computed(() => {
-  return matchData.value.records?.reduce((sum, r) => sum + r.player1Score, 0) || 0
-})
+  return matchData.value.records?.reduce((sum, r) => sum + r.player1Score, 0) || 0;
+});
 
 const player2WinCount = computed(() => {
-  return matchData.value.records?.reduce((sum, r) => sum + r.player2Score, 0) || 0
-})
+  return matchData.value.records?.reduce((sum, r) => sum + r.player2Score, 0) || 0;
+});
 
 const totalRounds = computed(() => {
-  return player1WinCount.value + player2WinCount.value
-})
+  return player1WinCount.value + player2WinCount.value;
+});
 
 const totalTime = computed(() => {
-  const records = matchData.value.records || []
-  let totalSeconds = 0
-  
-  records.forEach(record => {
-    const timeParts = record.time.split(':')
+  const records = matchData.value.records || [];
+  let totalSeconds = 0;
+
+  records.forEach((record) => {
+    const timeParts = record.time.split(':');
     if (timeParts.length === 2) {
-      totalSeconds += parseInt(timeParts[0]) * 60 + parseInt(timeParts[1])
+      totalSeconds += parseInt(timeParts[0]) * 60 + parseInt(timeParts[1]);
     }
-  })
-  
-  const hours = Math.floor(totalSeconds / 3600)
-  const minutes = Math.floor((totalSeconds % 3600) / 60)
-  const seconds = totalSeconds % 60
-  
+  });
+
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
   if (hours > 0) {
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
-})
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+});
 
 const matchWinner = computed(() => {
-  if (player1WinCount.value > player2WinCount.value) return 0
-  if (player2WinCount.value > player1WinCount.value) return 1
-  return -1
-})
+  if (player1WinCount.value > player2WinCount.value) return 0;
+  if (player2WinCount.value > player1WinCount.value) return 1;
+  return -1;
+});
 
 const winnerText = computed(() => {
-  if (matchWinner.value === 0) return `${matchData.value.player1Name} 获胜！`
-  if (matchWinner.value === 1) return `${matchData.value.player2Name} 获胜！`
-  return '平局'
-})
+  if (matchWinner.value === 0) return `${matchData.value.player1Name} 获胜！`;
+  if (matchWinner.value === 1) return `${matchData.value.player2Name} 获胜！`;
+  return '平局';
+});
 
 const gameModeLabel = computed(() => {
   switch (matchData.value.gameMode) {
     case 'timed':
-      return '限时模式'
+      return '限时模式';
     case 'rounds':
-      return `${matchData.value.winRounds * 2 - 1}局${matchData.value.winRounds}胜`
+      return `${matchData.value.winRounds * 2 - 1}局${matchData.value.winRounds}胜`;
     default:
-      return '普通模式'
+      return '普通模式';
   }
-})
+});
 
 onMounted(() => {
   try {
-    const data = uni.getStorageSync('matchSettleData')
+    const data = uni.getStorageSync('matchSettleData');
     if (data) {
-      matchData.value = JSON.parse(data)
-      uni.removeStorageSync('matchSettleData')
+      matchData.value = JSON.parse(data);
+      uni.removeStorageSync('matchSettleData');
     }
   } catch (e) {
-    console.error('读取结算数据失败', e)
+    console.error('读取结算数据失败', e);
   }
-})
+});
 
 function goHome() {
   uni.reLaunch({
-    url: '/pages/index/index'
-  })
+    url: '/pages/index/index',
+  });
 }
 </script>
 

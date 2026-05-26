@@ -6,14 +6,14 @@
         <text class="app-title">台球计分</text>
         <text class="app-subtitle">专业线下计分工具</text>
       </view>
-      
+
       <view class="ad-container">
         <view class="ad-placeholder">
           <text class="ad-label">开屏广告位</text>
           <text class="ad-countdown">{{ countdown }}s</text>
         </view>
       </view>
-      
+
       <view class="skip-btn" @tap="skipSplash" v-if="countdown > 0">
         <text>跳过</text>
       </view>
@@ -22,36 +22,36 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue';
 
-const countdown = ref(3)
-let timer: number | null = null
+const countdown = ref(3);
+let timer: number | null = null;
 
 onMounted(() => {
   timer = setInterval(() => {
     if (countdown.value > 0) {
-      countdown.value--
+      countdown.value--;
     } else {
-      goToHome()
+      goToHome();
     }
-  }, 1000) as unknown as number
-})
+  }, 1000) as unknown as number;
+});
 
 onUnmounted(() => {
   if (timer) {
-    clearInterval(timer)
+    clearInterval(timer);
   }
-})
+});
 
 function skipSplash() {
   if (timer) {
-    clearInterval(timer)
+    clearInterval(timer);
   }
-  goToHome()
+  goToHome();
 }
 
 function goToHome() {
-  uni.switchTab({ url: '/pages/index/index' })
+  uni.switchTab({ url: '/pages/index/index' });
 }
 </script>
 
@@ -129,7 +129,7 @@ function goToHome() {
   background: rgba(255, 255, 255, 0.2);
   padding: 15rpx 30rpx;
   border-radius: 30rpx;
-  
+
   text {
     color: #fff;
     font-size: 26rpx;
