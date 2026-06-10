@@ -23,6 +23,7 @@ export interface MatchConfig {
   multiplier: number;
   gameTime: number | null;
   gameRounds: number | null;
+  opponentDeductEnabled: boolean; // 对手是否减分
 }
 
 export interface Player {
@@ -88,6 +89,7 @@ export const DEFAULT_CONFIG: MatchConfig = {
   multiplier: 2,
   gameTime: null,
   gameRounds: null,
+  opponentDeductEnabled: true,
 };
 
 export const PLAYER_COLORS = ['#1a5276', '#8b0000', '#2d5a27', '#8b7355', '#4a235a'];

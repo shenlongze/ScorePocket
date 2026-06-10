@@ -124,111 +124,101 @@
 
       <!-- 横屏布局 -->
       <view class="layout-landscape" v-else>
-        <view class="landscape-top-bar" v-if="showTimerBar">
-          <view class="landscape-timer-info">
-            <text class="timer-value">{{ formattedTime }}</text>
-            <text class="round-value">局数: {{ completedRounds }}/{{ config.gameRounds || '-' }}</text>
-          </view>
-          <view class="timer-btn" :class="{ active: isTimerRunning }" @tap.stop="toggleTimer">
-            {{ isTimerRunning ? '暂停计时' : '开始计时' }}
-          </view>
-          <view class="toggle-timer-btn" @tap.stop="toggleTimerBar">
-            <text>隐藏计时</text>
-          </view>
-        </view>
-
-        <view class="landscape-players-container">
-          <view
-            v-for="player in players"
-            :key="player.id"
-            :class="[
-              'player-card',
-              'landscape-player-card',
-              { active: currentPlayerId === player.id },
-            ]"
-            :style="{ '--player-color': PLAYER_COLORS[player.id - 1] }"
-            @tap.stop="switchToPlayer(player.id)"
-          >
-            <view class="player-header" :style="{ background: PLAYER_COLORS[player.id - 1] }">
-              <text class="player-name">{{ player.name }}</text>
-              <view v-if="currentPlayerId === player.id" class="current-indicator">当前</view>
+        <view class="players-section-wrapper">
+          <view class="landscape-top-bar" v-if="showTimerBar">
+            <view class="landscape-timer-info">
+              <text class="timer-value">{{ formattedTime }}</text>
+              <text class="round-value">局数: {{ completedRounds }}/{{ config.gameRounds || '-' }}</text>
             </view>
-            <view class="score-area">
-              <text class="score-value">{{ player.score }}</text>
+            <view class="timer-btn" :class="{ active: isTimerRunning }" @tap.stop="toggleTimer">
+              {{ isTimerRunning ? '暂停计时' : '开始计时' }}
             </view>
-            <view class="stats-row" :class="{ 'horizontal-stats': shouldShowHorizontalStats }">
-              <view class="stat-item">
-                <text class="stat-num">{{ player.stats.foul }}</text>
-                <text class="stat-label">犯规</text>
-              </view>
-              <view class="stat-item">
-                <text class="stat-num">{{ player.stats.normalWin }}</text>
-                <text class="stat-label">普胜</text>
-              </view>
-              <view class="stat-item">
-                <text class="stat-num">{{ player.stats.smallGolden }}</text>
-                <text class="stat-label">小金</text>
-              </view>
-              <view class="stat-item">
-                <text class="stat-num">{{ player.stats.bigGolden }}</text>
-                <text class="stat-label">大金</text>
-              </view>
-              <view class="stat-item">
-                <text class="stat-num">{{ player.stats.goldenNine }}</text>
-                <text class="stat-label">黄金九</text>
-              </view>
+            <view class="toggle-timer-btn" @tap.stop="toggleTimerBar">
+              <text>隐藏计时</text>
             </view>
           </view>
-        </view>
 
-        <view class="landscape-controls">
-          <view class="control-btn" @tap="handleFoul">
-            <text class="btn-icon">⛔</text>
-            <text class="btn-text">犯规</text>
-          </view>
-          <view class="control-btn" @tap="handleNormalWin">
-            <text class="btn-icon">🏆</text>
-            <text class="btn-text">普胜</text>
-          </view>
-          <view class="control-btn" @tap="handleSmallGolden">
-            <text class="btn-icon">🥈</text>
-            <text class="btn-text">小金</text>
-          </view>
-          <view class="control-btn" :class="{ disabled: !isGoldenEnabled }" @tap="handleBigGolden">
-            <text class="btn-icon">🥇</text>
-            <text class="btn-text">大金</text>
-          </view>
-          <view class="control-btn" :class="{ disabled: !isGoldenEnabled }" @tap="handleGoldenNine">
-            <text class="btn-icon">🌟</text>
-            <text class="btn-text">黄金九</text>
-          </view>
-          <view
-            class="control-btn"
-            :class="{ disabled: !config.chainEnabled }"
-            @tap="handleBonusClick"
-          >
-            <text class="btn-icon">🎁</text>
-            <text class="btn-text">半彩</text>
-          </view>
-        </view>
-
-        <view class="landscape-bottom-bar">
-          <view class="bottom-left">
-            <text class="timer-info">{{ formattedTime }}</text>
-            <text class="round-info"
-              >局数: {{ completedRounds }}/{{ config.gameRounds || '-' }}</text
+          <view class="landscape-players-container">
+            <view
+              v-for="player in players"
+              :key="player.id"
+              :class="[
+                'landscape-player-card',
+                { active: currentPlayerId === player.id },
+              ]"
+              :style="{ '--player-color': PLAYER_COLORS[player.id - 1] }"
+              @tap.stop="switchToPlayer(player.id)"
             >
-          </view>
-          <view class="bottom-right">
-            <view class="more-btn" @tap="toggleMoreMenu">{{
-              showMoreMenu ? '收起 ▲' : '更多 ▼'
-            }}</view>
-            <view class="more-menu" v-if="showMoreMenu">
-              <view class="more-item record-item" @tap="showFullRecordsFromMore">操作记录</view>
-              <view class="more-item reset-item" @tap="handleReset">重置</view>
-              <view class="more-item settle-item" @tap="handleSettle">结算</view>
+              <view class="player-header" :style="{ background: PLAYER_COLORS[player.id - 1] }">
+                <text class="player-name">{{ player.name }}</text>
+                <view v-if="currentPlayerId === player.id" class="current-indicator">当前</view>
+              </view>
+              <view class="score-area">
+                <text class="score-value">{{ player.score }}</text>
+              </view>
+              <view class="stats-row" :class="{ 'horizontal-stats': shouldShowHorizontalStats }">
+                <view class="stat-item">
+                  <text class="stat-num">{{ player.stats.foul }}</text>
+                  <text class="stat-label">犯规</text>
+                </view>
+                <view class="stat-item">
+                  <text class="stat-num">{{ player.stats.normalWin }}</text>
+                  <text class="stat-label">普胜</text>
+                </view>
+                <view class="stat-item">
+                  <text class="stat-num">{{ player.stats.smallGolden }}</text>
+                  <text class="stat-label">小金</text>
+                </view>
+                <view class="stat-item">
+                  <text class="stat-num">{{ player.stats.bigGolden }}</text>
+                  <text class="stat-label">大金</text>
+                </view>
+                <view class="stat-item">
+                  <text class="stat-num">{{ player.stats.goldenNine }}</text>
+                  <text class="stat-label">黄金九</text>
+                </view>
+                <view class="stat-item">
+                  <text class="stat-num">{{ player.stats.bonus }}</text>
+                  <text class="stat-label">半彩</text>
+                </view>
+              </view>
             </view>
           </view>
+        </view>
+
+        <view class="controls-section-wrapper">
+          <view class="landscape-controls">
+            <view class="control-btn" @tap="handleFoul">
+              <text class="btn-icon">⛔</text>
+              <text class="btn-text">犯规</text>
+            </view>
+            <view class="control-btn" @tap="handleNormalWin">
+              <text class="btn-icon">🏆</text>
+              <text class="btn-text">普胜</text>
+            </view>
+            <view class="control-btn" @tap="handleSmallGolden">
+              <text class="btn-icon">🥈</text>
+              <text class="btn-text">小金</text>
+            </view>
+            <view class="control-btn" :class="{ disabled: !isGoldenEnabled }" @tap="handleBigGolden">
+              <text class="btn-icon">🥇</text>
+              <text class="btn-text">大金</text>
+            </view>
+            <view class="control-btn" :class="{ disabled: !isGoldenEnabled }" @tap="handleGoldenNine">
+              <text class="btn-icon">🌟</text>
+              <text class="btn-text">黄金九</text>
+            </view>
+            <view
+              class="control-btn"
+              :class="{ disabled: !config.chainEnabled }"
+              @tap="handleBonusClick"
+            >
+              <text class="btn-icon">🎁</text>
+              <text class="btn-text">半彩</text>
+            </view>
+          </view>
+
+
         </view>
       </view>
     </view>
@@ -780,8 +770,10 @@ function handleSettle() {
 
 <style lang="scss" scoped>
 .scoreboard-page {
-  min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
   background: #000;
+  overflow: hidden;
 }
 
 .game-header {
@@ -913,8 +905,9 @@ function handleSettle() {
   overflow: hidden;
 
   &.landscape-content {
-    padding-bottom: 0;
-    height: 100vh;
+    margin: 0;
+    padding: 6rpx;
+    box-sizing: border-box;
   }
 }
 
@@ -927,22 +920,46 @@ function handleSettle() {
 }
 
 .layout-landscape {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 0;
-  padding: 10rpx;
-  height: 100vh;
-  overflow: hidden;
+  background: #0c101d;
+  padding: 6rpx;
   box-sizing: border-box;
+  margin: 0;
+
+  .players-section-wrapper {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6rpx;
+    overflow: hidden;
+    margin-top: 6rpx;
+  }
+
+  .controls-section-wrapper {
+    height: 12vh;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: 4rpx;
+    margin-bottom: 6rpx;
+  }
 }
 
 .landscape-top-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15rpx 20rpx;
+  padding: 0 12rpx;
   background: rgba(26, 26, 46, 0.95);
-  border-radius: 12rpx;
+  border-radius: 8rpx;
+  height: 8vh;
+  min-height: 0;
 }
 
 .landscape-timer-info {
@@ -964,27 +981,59 @@ function handleSettle() {
 
 .landscape-players-container {
   display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  gap: 10rpx;
-  flex: 1;
+  gap: 12rpx;
   min-height: 0;
-  max-height: calc(100vh - 140rpx);
+  height: calc(100% - 8vh);
+  width: 100%;
 }
 
 .landscape-player-card {
   flex: 1;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  border-radius: 12rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  padding: 6rpx 8rpx;
   min-height: 0;
-  max-height: 100%;
+  min-width: 0;
+
+  &.active {
+    border-color: #ff8c00;
+    box-shadow: 0 0 15rpx rgba(255, 140, 0, 0.35);
+  }
 
   .score-area {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 60rpx;
+    padding: 0;
+    min-height: 0;
+  }
+
+  .score-value {
+    font-size: 48rpx;
+    font-weight: 900;
+    color: #fbbf24;
+  }
+
+  .stats-row {
+    flex-shrink: 0;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 2rpx;
+    padding: 4rpx 4rpx;
+    margin-top: auto;
+    margin-bottom: 4rpx;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    border-top: 1rpx solid rgba(255, 255, 255, 0.2);
   }
 }
 
@@ -1008,16 +1057,14 @@ function handleSettle() {
 
 .player-card {
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 16rpx 16rpx 0 0;
+  border-radius: 20rpx;
   overflow: hidden;
-  border: 3rpx solid transparent;
-  border-bottom: none;
+  border: 3rpx solid rgba(255, 255, 255, 0.15);
   transition: all 0.3s ease;
 
   &.active {
     border-color: #ff8c00;
-    box-shadow: 0 0 20rpx rgba(255, 140, 0, 0.3);
-    border-bottom-color: transparent;
+    box-shadow: 0 0 25rpx rgba(255, 140, 0, 0.4);
   }
 }
 
@@ -1025,97 +1072,109 @@ function handleSettle() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4rpx 8rpx;
+  padding: 12rpx 15rpx;
 
   .player-name {
     color: #fff;
-    font-size: 24rpx;
+    font-size: 20rpx;
     font-weight: bold;
   }
 }
 
 .current-indicator {
   background: rgba(255, 255, 255, 0.2);
-  padding: 2rpx 8rpx;
-  border-radius: 6rpx;
+  padding: 5rpx 10rpx;
+  border-radius: 8rpx;
   color: #fff;
-  font-size: 16rpx;
+  font-size: 13rpx;
 }
 
 .order-indicator {
   background: rgba(0, 0, 0, 0.3);
-  padding: 5rpx 10rpx;
-  border-radius: 8rpx;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 20rpx;
+  padding: 12rpx 20rpx;
+  border-radius: 16rpx;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 30rpx;
 }
 
 .score-area {
-  padding: 2rpx;
+  padding: 25rpx;
   display: flex;
   justify-content: center;
 }
 
 .score-value {
   color: #ff8c00;
-  font-size: 48rpx;
+  font-size: 24px;
   font-weight: bold;
+}
+
+.layout-landscape .score-value {
+  color: #ff8c00 !important;
 }
 
 .stats-row {
   display: flex;
   justify-content: space-around;
-  padding: 3rpx 4rpx;
-  border-top: 1rpx solid rgba(255, 255, 255, 0.1);
+  padding: 25rpx 15rpx;
+  border-top: 2rpx solid rgba(255, 255, 255, 0.2);
 }
 
 .stat-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rpx;
+  gap: 4rpx;
 }
 
 .stat-num {
   color: #ff8c00;
-  font-size: 16rpx;
+  font-size: 28rpx;
   font-weight: bold;
 }
 
 .stat-label {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 12rpx;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 18rpx;
+}
+
+.landscape-player-card .stats-row {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 2rpx;
+  padding: 4rpx 6rpx;
+  margin-top: auto;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  border-top: 1rpx solid rgba(255, 255, 255, 0.2);
 }
 
 .landscape-player-card .stat-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rpx;
+  justify-content: center;
+  gap: 2rpx;
+  text-align: center;
+}
+
+.landscape-player-card .stat-num {
+  color: #fbbf24;
+  font-size: 14rpx;
+  font-weight: bold;
+  line-height: 1;
 }
 
 .landscape-player-card .stat-label {
-  writing-mode: vertical-rl;
-  text-orientation: upright;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 10rpx;
-  letter-spacing: 1rpx;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 10px;
+  line-height: 1;
+  transform: scale(0.9);
 }
 
 .landscape-player-card .horizontal-stats {
   flex-wrap: wrap;
-}
-
-.landscape-player-card .horizontal-stats .stat-item {
-  flex-direction: column;
-  align-items: center;
-}
-
-.landscape-player-card .horizontal-stats .stat-label {
-  writing-mode: horizontal-tb;
-  text-orientation: mixed;
-  font-size: 12rpx;
-  letter-spacing: normal;
 }
 
 .bottom-info-section {
@@ -1214,82 +1273,49 @@ function handleSettle() {
 }
 
 .landscape-controls {
-  display: flex;
-  background: rgba(26, 26, 46, 0.95);
-  padding: 4rpx 8rpx;
-  gap: 4rpx;
-  border-radius: 16rpx 16rpx 0 0;
-  margin-top: -3rpx;
-  max-height: 60rpx;
-}
-
-.landscape-bottom-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 3rpx 10rpx;
-  padding-bottom: calc(3rpx + env(safe-area-inset-bottom));
-  background: rgba(26, 26, 46, 0.98);
-  border-radius: 0 0 16rpx 16rpx;
-  max-height: 28rpx;
-}
-
-.bottom-left {
-  display: flex;
-  gap: 20rpx;
-}
-
-.round-info,
-.timer-info {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 14rpx;
-  font-family: monospace;
-}
-
-.bottom-right {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8rpx;
+  padding: 6rpx;
+  border-radius: 8rpx;
+  background: #1e293b;
   position: relative;
-}
+  z-index: 2;
+  width: 100%;
+  height: 55px;
+  box-sizing: border-box;
 
-.more-btn {
-  padding: 2rpx 6rpx;
-  background: rgba(255, 140, 0, 0.3);
-  border-radius: 3rpx;
-  color: #ff8c00;
-  font-size: 14rpx;
-}
+  .control-btn {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #16a34a;
+    border-radius: 8rpx;
+    box-sizing: border-box;
+    padding: 4rpx;
 
-.more-menu {
-  position: absolute;
-  bottom: 100%;
-  right: 0;
-  margin-bottom: 10rpx;
-  background: rgba(26, 26, 46, 0.98);
-  border-radius: 12rpx;
-  padding: 10rpx 0;
-  min-width: 150rpx;
-  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.5);
-}
+    &.disabled {
+      background: #4a4a5a;
+      opacity: 0.6;
+    }
 
-.more-item {
-  padding: 8rpx 15rpx;
-  color: #fff;
-  font-size: 18rpx;
-  text-align: left;
+    .btn-icon {
+      font-size: 20rpx;
+      line-height: 1;
+    }
 
-  &:active {
-    background: rgba(255, 140, 0, 0.2);
-  }
-
-  &.record-item {
-    color: #ffd700;
-  }
-
-  &.reset-item {
-    color: #ff6b6b;
-  }
-
-  &.settle-item {
-    color: #4ecdc4;
+    .btn-text {
+      font-size: 10px;
+      color: #fff;
+      font-weight: 600;
+      line-height: 1;
+      transform: scale(0.9);
+      white-space: nowrap;
+      margin-top: 2rpx;
+    }
   }
 }
 
@@ -1299,20 +1325,19 @@ function handleSettle() {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rpx;
-  padding: 2rpx 2rpx;
+  gap: 6rpx;
+  padding: 15rpx 10rpx;
   background: #228b22;
-  border-radius: 4rpx;
-  min-height: 40rpx;
+  border-radius: 12rpx;
 }
 
 .btn-icon {
-  font-size: 16rpx;
+  font-size: 28rpx;
 }
 
 .btn-text {
   color: #fff;
-  font-size: 14rpx;
+  font-size: 22rpx;
   font-weight: bold;
   white-space: nowrap;
 }
@@ -1324,12 +1349,13 @@ function handleSettle() {
 }
 
 .operation-records-section {
-  padding: 15rpx 20rpx;
+  padding: 25rpx;
   background: rgba(26, 26, 46, 0.95);
-  border-radius: 12rpx;
-  margin: 15rpx 20rpx;
-  margin-bottom: 280rpx;
-  border: 1rpx solid rgba(255, 140, 0, 0.2);
+  border-radius: 20rpx;
+  margin-top: 30rpx;
+  margin-bottom: 360rpx;
+  border: 2rpx solid rgba(255, 140, 0, 0.3);
+  min-height: 200rpx;
 }
 
 .operation-records-section.landscape-records {

@@ -10,20 +10,20 @@
           <view
             class="action-btn"
             @tap.stop="
-              undoAction;
-              showActions = true;
-              showHeader = true;
-              resetHideTimer;
+              undoAction();
+              showActions.value = true;
+              showHeader.value = true;
+              resetHideTimer();
             "
             >撤销</view
           >
           <view
             class="action-btn"
             @tap.stop="
-              resetGame;
-              showActions = true;
-              showHeader = true;
-              resetHideTimer;
+              resetGame();
+              showActions.value = true;
+              showHeader.value = true;
+              resetHideTimer();
             "
             >重置</view
           >
@@ -119,7 +119,7 @@
             <view class="action-btn-wrap">
               <view
                 class="bottom-btn undo-btn"
-                @tap.stop="undoAction"
+                @tap.stop="undoAction()"
               >
                 <text>撤销</text>
               </view>
@@ -170,7 +170,7 @@
             <view class="records-title">操作记录</view>
             <view
               class="records-more-btn"
-              @tap.stop="handleShowFullRecords"
+              @tap.stop="handleShowFullRecords()"
             >
               <text>更多</text>
             </view>
@@ -194,9 +194,9 @@
 
         <view class="bottom-actions show" v-if="!isLandscape">
           <view class="action-btn-wrap">
-            <view class="bottom-btn undo-btn" @tap.stop="undoAction">
-              <text>撤销</text>
-            </view>
+            <view class="bottom-btn undo-btn" @tap.stop="undoAction()">
+                <text>撤销</text>
+              </view>
             <view class="bottom-btn plus-btn" @tap.stop="handleAddScore(currentPlayer)">
               <text>加分</text>
             </view>
@@ -255,11 +255,11 @@
           <view class="settle-section">
             <text class="settle-section-title">总比分</text>
             <view class="settle-score-row">
-              <text class="settle-player-name">{{ players[0]?.name }}</text>
-              <text class="settle-player-score">{{ matchHistory.length > 0 ? matchHistory[matchHistory.length - 1].player1Wins : 0 }}</text>
-              <text class="settle-divider">:</text>
-              <text class="settle-player-score">{{ matchHistory.length > 0 ? matchHistory[matchHistory.length - 1].player2Wins : 0 }}</text>
-              <text class="settle-player-name">{{ players[1]?.name }}</text>
+              <template v-for="(player, index) in players" :key="player.id">
+                <text class="settle-player-name">{{ player.name }}</text>
+                <text class="settle-player-score">{{ matchHistory.length > 0 ? matchHistory[matchHistory.length - 1].playerWins[index] || 0 : 0 }}</text>
+                <text v-if="index < players.length - 1" class="settle-divider">:</text>
+              </template>
             </view>
           </view>
 
@@ -273,29 +273,23 @@
                 <text class="round-title">第{{ record.round }}局</text>
               </view>
               <view class="round-score-row">
-                <text class="round-player-name">{{ players[0]?.name }}</text>
-                <text class="round-player-score">{{ record.player1Score }}</text>
-                <text class="round-divider">:</text>
-                <text class="round-player-score">{{ record.player2Score }}</text>
-                <text class="round-player-name">{{ players[1]?.name }}</text>
+                <template v-for="(player, pIndex) in players" :key="player.id">
+                  <text class="round-player-name">{{ player.name }}</text>
+                  <text class="round-player-score">{{ record.playerScores[pIndex] || 0 }}</text>
+                  <text v-if="pIndex < players.length - 1" class="round-divider">:</text>
+                </template>
               </view>
               <view class="round-stats">
-                <view class="round-stat-item">
-                  <text class="round-stat-label">{{ players[0]?.name }} 炸清</text>
-                  <text class="round-stat-value">{{ record.player1ZhaQing }}次</text>
-                </view>
-                <view class="round-stat-item">
-                  <text class="round-stat-label">{{ players[0]?.name }} 接清</text>
-                  <text class="round-stat-value">{{ record.player1JieQing }}次</text>
-                </view>
-                <view class="round-stat-item">
-                  <text class="round-stat-label">{{ players[1]?.name }} 炸清</text>
-                  <text class="round-stat-value">{{ record.player2ZhaQing }}次</text>
-                </view>
-                <view class="round-stat-item">
-                  <text class="round-stat-label">{{ players[1]?.name }} 接清</text>
-                  <text class="round-stat-value">{{ record.player2JieQing }}次</text>
-                </view>
+                <template v-for="(player, pIndex) in players" :key="player.id">
+                  <view class="round-stat-item">
+                    <text class="round-stat-label">{{ player.name }} 炸清</text>
+                    <text class="round-stat-value">{{ record.playerZhaQing[pIndex] || 0 }}次</text>
+                  </view>
+                  <view class="round-stat-item">
+                    <text class="round-stat-label">{{ player.name }} 接清</text>
+                    <text class="round-stat-value">{{ record.playerJieQing[pIndex] || 0 }}次</text>
+                  </view>
+                </template>
               </view>
             </view>
 
@@ -372,14 +366,10 @@ const roundHistory = ref<any[]>([]);
 const hasRestarted = ref(false);
 const matchHistory = ref<{ 
   round: number;
-  player1Score: number;
-  player2Score: number;
-  player1ZhaQing: number;
-  player1JieQing: number;
-  player2ZhaQing: number;
-  player2JieQing: number;
-  player1Wins: number;
-  player2Wins: number;
+  playerScores: number[];
+  playerZhaQing: number[];
+  playerJieQing: number[];
+  playerWins: number[];
 }[]>([]);
 const showSettleModal = ref(false);
 
@@ -717,26 +707,33 @@ function handleRoundWin(playerIndex: number) {
 }
 
 function checkGameEnd(playerIndex: number) {
+  if (gameMode.value === 'simple') {
+    return;
+  }
+  
   const player = players.value[playerIndex];
   if (player.score >= winRounds.value) {
     isGameEnded.value = true;
     addOperationRecord('win', `${player.name} 赢得比赛！(${winRounds.value}局${player.score}胜)`);
     
     const lastScores = players.value.map(p => p.score);
-    const winnerIndex = lastScores[0] > lastScores[1] ? 0 : 1;
-    const currentPlayer1Wins = matchHistory.value.length > 0 ? matchHistory.value[matchHistory.value.length - 1].player1Wins : 0;
-    const currentPlayer2Wins = matchHistory.value.length > 0 ? matchHistory.value[matchHistory.value.length - 1].player2Wins : 0;
+    const maxScore = Math.max(...lastScores);
+    const winnerIndex = lastScores.indexOf(maxScore);
+    
+    const lastWins = matchHistory.value.length > 0 
+      ? matchHistory.value[matchHistory.value.length - 1].playerWins 
+      : players.value.map(() => 0);
+    
+    const playerWins = players.value.map((_, index) => 
+      index === winnerIndex ? (lastWins[index] || 0) + 1 : (lastWins[index] || 0)
+    );
     
     matchHistory.value.push({
       round: matchHistory.value.length + 1,
-      player1Score: players.value[0].score,
-      player2Score: players.value[1].score,
-      player1ZhaQing: players.value[0].zhaQing,
-      player1JieQing: players.value[0].jieQing,
-      player2ZhaQing: players.value[1].zhaQing,
-      player2JieQing: players.value[1].jieQing,
-      player1Wins: winnerIndex === 0 ? currentPlayer1Wins + 1 : currentPlayer1Wins,
-      player2Wins: winnerIndex === 1 ? currentPlayer2Wins + 1 : currentPlayer2Wins
+      playerScores: players.value.map(p => p.score),
+      playerZhaQing: players.value.map(p => p.zhaQing),
+      playerJieQing: players.value.map(p => p.jieQing),
+      playerWins: playerWins
     });
     
     hasRestarted.value = true;
@@ -793,7 +790,9 @@ function resetMatch() {
   historyStack.value = [];
   lastRoundStartTime.value = Date.now();
   isGameEnded.value = false;
-  addOperationRecord('settle', `${players.value[0].name} ${lastScores[0]}:${lastScores[1]} ${players.value[1].name}`);
+  
+  const scoreText = players.value.map((p, i) => `${p.name} ${lastScores[i]}`).join(' : ');
+  addOperationRecord('settle', scoreText);
   addOperationRecord('settle', '重新开始新一局抢7');
 }
 
@@ -1683,8 +1682,8 @@ function resetHideTimer() {
   right: 0;
   z-index: 500;
   background: rgba(0, 0, 0, 0.95);
-  padding: 12rpx 16rpx;
-  padding-bottom: calc(12rpx + env(safe-area-inset-bottom));
+  padding: 16rpx 20rpx;
+  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
   border-top: 1rpx solid rgba(255, 255, 255, 0.1);
   transform: translateY(100%);
   transition: transform 0.3s ease;
@@ -1696,18 +1695,18 @@ function resetHideTimer() {
 
 .action-btn-wrap {
   display: flex;
-  gap: 6rpx;
-  padding: 0 4rpx;
+  gap: 8rpx;
+  padding: 0 8rpx;
 }
 
 .bottom-btn {
   flex: 1;
   flex-basis: 0;
-  height: 60rpx;
+  height: 80rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10rpx;
+  border-radius: 16rpx;
   transition: all 0.2s ease;
 
   &:active {
@@ -1716,7 +1715,7 @@ function resetHideTimer() {
   }
 
   text {
-    font-size: 20rpx;
+    font-size: 26rpx;
     font-weight: bold;
     color: #fff;
   }

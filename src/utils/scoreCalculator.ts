@@ -46,6 +46,7 @@ function getDefaultConfig(): MatchConfig {
     multiplier: 2,
     gameTime: null,
     gameRounds: null,
+    opponentDeductEnabled: true,
   };
 }
 
@@ -79,20 +80,22 @@ export function calculateWinScore(
 
   winner.score = Number(winner.score) + multipliedScore;
 
-  const isPrevOnly = scoreType === 'normalWin' || scoreType === 'smallGolden';
+  if (config.opponentDeductEnabled) {
+    const isPrevOnly = scoreType === 'normalWin' || scoreType === 'smallGolden';
 
-  if (isPrevOnly) {
-    const prevPlayerId = getPrevPlayer(winnerId);
-    const prevPlayer = players.find((p) => p.id === prevPlayerId);
-    if (prevPlayer) {
-      prevPlayer.score = Number(prevPlayer.score) - multipliedScore;
-    }
-  } else {
-    players.forEach((player) => {
-      if (player.id !== winnerId) {
-        player.score = Number(player.score) - multipliedScore;
+    if (isPrevOnly) {
+      const prevPlayerId = getPrevPlayer(winnerId);
+      const prevPlayer = players.find((p) => p.id === prevPlayerId);
+      if (prevPlayer) {
+        prevPlayer.score = Number(prevPlayer.score) - multipliedScore;
       }
-    });
+    } else {
+      players.forEach((player) => {
+        if (player.id !== winnerId) {
+          player.score = Number(player.score) - multipliedScore;
+        }
+      });
+    }
   }
 
   savePlayers(players);
@@ -142,7 +145,10 @@ export function handleFoul(foulerId: number): void {
 
   fouler.stats.foul++;
   resetPlayerStreak(foulerId);
-  fouler.score = Number(fouler.score) - foulPoints;
+
+  if (config.opponentDeductEnabled) {
+    fouler.score = Number(fouler.score) - foulPoints;
+  }
 
   let targetDescription = '';
 
@@ -166,11 +172,13 @@ export function handleFoul(foulerId: number): void {
     targetDescription = `${otherNames}+${foulPoints}分`;
   }
 
+  const deductionText = config.opponentDeductEnabled ? `${fouler.name}-${foulPoints}分，` : '';
+
   addRecord({
     type: 'foul',
     playerId: foulerId,
     points: foulPoints,
-    description: `${fouler.name} 犯规 → ${fouler.name}-${foulPoints}分，${targetDescription}，${nextPlayer.name}获得自由球`,
+    description: `${fouler.name} 犯规 → ${deductionText}${targetDescription}，${nextPlayer.name}获得自由球`,
   });
 
   savePlayers(players);

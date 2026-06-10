@@ -59,6 +59,14 @@
           <text class="item-label">基础分数</text>
           <input type="number" class="value-input" v-model="config.baseScore" />
         </view>
+
+        <view class="config-item">
+          <text class="item-label">对手减分</text>
+          <switch
+            :checked="config.opponentDeductEnabled"
+            @change="config.opponentDeductEnabled = !config.opponentDeductEnabled"
+          />
+        </view>
       </view>
 
       <view class="config-section">
