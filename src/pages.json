@@ -131,7 +131,8 @@
 		"navigationBarBackgroundColor": "#1a1a2e",
 		"backgroundColor": "#1a1a2e",
 		"backgroundColorTop": "#1a1a2e",
-		"backgroundColorBottom": "#1a1a2e"
+		"backgroundColorBottom": "#1a1a2e",
+		"enableShareAppMessage": true
 	},
 	"tabBar": {
 		"color": "#8f8f94",
